@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS bn_ville (
   PRIMARY KEY (id),
   KEY idx_ville_idRegion (idRegion),
   CONSTRAINT fk_ville_region
-    FOREIGN KEY (idRegion) REFERENCES region(id)
+    FOREIGN KEY (idRegion) REFERENCES bn_region(id)
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS bn_element (
   PRIMARY KEY (id),
   KEY idx_element_idtypebesoin (idtypebesoin),
   CONSTRAINT fk_element_typeBesoin
-    FOREIGN KEY (idtypebesoin) REFERENCES typeBesoin(id)
+    FOREIGN KEY (idtypebesoin) REFERENCES bn_typeBesoin(id)
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -46,11 +46,11 @@ CREATE TABLE IF NOT EXISTS bn_besoin (
   KEY idx_besoin_idVille (idVille),
   KEY idx_besoin_date (`date`),
   CONSTRAINT fk_besoin_element
-    FOREIGN KEY (idelement) REFERENCES element(id)
+    FOREIGN KEY (idelement) REFERENCES bn_element(id)
     ON UPDATE CASCADE
     ON DELETE RESTRICT,
   CONSTRAINT fk_besoin_ville
-    FOREIGN KEY (idVille) REFERENCES ville(id)
+    FOREIGN KEY (idVille) REFERENCES bn_ville(id)
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS bn_don (
   KEY idx_don_idVille (idVille),
   KEY idx_don_date (`date`),
   CONSTRAINT fk_don_ville
-    FOREIGN KEY (idVille) REFERENCES ville(id)
+    FOREIGN KEY (idVille) REFERENCES bn_ville(id)
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
