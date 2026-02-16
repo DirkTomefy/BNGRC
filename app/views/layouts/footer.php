@@ -5,8 +5,9 @@
         <div class="container">
             <div class="row py-4">
                 <div class="col-md-4 mb-3 mb-md-0">
-                    <h6 class="fw-bold text-white">
-                        <i class="bi bi-shield-check me-2"></i>BNGRC
+                <h6>ETU003911 - ETU003948 - ETU004130</h6>    
+                <h6 class="fw-bold text-white">
+                        <i class="bi bi-shield-check me-2"></i>BNGRC  
                     </h6>
                     <p class="text-light small mb-0">
                         Bureau National de Gestion des Risques et Catastrophes.<br>
