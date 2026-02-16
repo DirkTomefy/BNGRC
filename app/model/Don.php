@@ -45,40 +45,10 @@ class Don
         ", [$idVille]);
     }
 
-    public function create(string $date, int $idVille, ?string $description, int $quantite): int
-    {
-        $this->db->runQuery("INSERT INTO bn_don (date, idVille, description, quantite) VALUES (?, ?, ?, ?)", [$date, $idVille, $description, $quantite]);
-        return (int)$this->db->lastInsertId();
-    }
-
     public function insertDon(int $idVille, int $idElement, int $quantite): int
     {
         $this->db->runQuery("INSERT INTO bn_don (idVille, idelement, quantite, date) VALUES (?, ?, ?, ?)", [$idVille, $idElement, $quantite, date('Y-m-d')]);
         return (int)$this->db->lastInsertId();
-    }
-
-    public function update(int $id, string $date, int $idVille, ?string $description, int $quantite): bool
-    {
-        $stmt = $this->db->runQuery("UPDATE bn_don SET date = ?, idVille = ?, description = ?, quantite = ? WHERE id = ?", [$date, $idVille, $description, $quantite, $id]);
-        return $stmt->rowCount() > 0;
-    }
-
-    public function delete(int $id): bool
-    {
-        $stmt = $this->db->runQuery("DELETE FROM bn_don WHERE id = ?", [$id]);
-        return $stmt->rowCount() > 0;
-    }
-
-    public function getStatsByVille(): array
-    {
-        return $this->db->fetchAll("
-            SELECT v.libele as ville_libele, COUNT(d.id) as nombre_dons, 
-                   SUM(d.quantite) as quantite_totale
-            FROM bn_don d 
-            LEFT JOIN bn_ville v ON d.idVille = v.id 
-            GROUP BY v.id, v.libele 
-            ORDER BY quantite_totale DESC
-        ");
     }
 
     public function getTotalQuantite(): int
