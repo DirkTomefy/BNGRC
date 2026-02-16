@@ -51,18 +51,6 @@ $router = $app->router();
  * that will handle the request.
  */
 require('routes.php');
-// Suppose que $config contient tes infos DB
-// Suppose que $config contient tes infos DB
-
-$dbConfig = $config['database'];
-
-Flight::register('db', 'PDO', [
-    "mysql:host={$dbConfig['host']};port={$dbConfig['port']};dbname={$dbConfig['dbname']};charset=utf8",
-    $dbConfig['user'],
-    $dbConfig['password']
-]);
-
-
 
 // At this point, your app should have all the instructions it needs and it'll
 // "start" processing everything. This is where the magic happens.
