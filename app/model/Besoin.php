@@ -62,7 +62,7 @@ class Besoin
         ", [$idElement]);
     }
 
-    public function create(int $idElement, int $quantite, int $idVille, string $date): int
+    public function insert(int $idElement, int $quantite, int $idVille, string $date): int
     {
         $this->db->run("INSERT INTO bn_besoin (idelement, quantite, idVille, date) VALUES (?, ?, ?, ?)", [$idElement, $quantite, $idVille, $date]);
         return (int)$this->db->lastInsertId();
