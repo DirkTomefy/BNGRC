@@ -39,7 +39,7 @@ function getCouvertureClass($pourcentage) {
 
 $pageTitle = 'Gestion des besoins et dons - Madagascar';
 $currentPage = 'dashboard';
-$pageCss = ['assets/css/dashboard/dasboard.css'];
+$pageCss = ['/assets/css/dashboard/dasboard.css'];
 include __DIR__ . '/../layouts/header.php';
 
 // Initialisation des variables

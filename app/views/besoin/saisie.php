@@ -5,23 +5,12 @@ $elements = $elements ?? [];
 $success = $success ?? '';
 $error = $error ?? '';
 $form = $form ?? [];
-$pageTitle = 'Saisie des dons - Madagascar';
-$currentPage = 'don';
+$pageTitle = 'Saisie des besoins - Madagascar';
+$currentPage = 'besoin';
 $pageCss = ['/assets/css/besoin/saisie.css'];
 include __DIR__ . '/../layouts/header.php';
 
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saisie des besoins - Madagascar</title>
-    
-
-</head>
-<body>
 
     <!-- En-tête -->
     <div class="container-fluid py-5">
@@ -178,8 +167,5 @@ include __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/besoin/saisie.js"></script>
-</body>
-</html>
+<?php $pageJs = ['/assets/js/besoin/saisie.js']; ?>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>
