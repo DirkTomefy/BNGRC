@@ -1,63 +1,27 @@
 <?php
-// --- Données brutes simulées ---
-$donnees = [
-    [
-        "ville" => "Antananarivo",
-        "region" => "Analamanga",
-        "besoins" => [
-            ["element" => "Riz", "quantite" => 500, "prix_unitaire" => 2500, "type_besoin" => "Alimentaire"],
-            ["element" => "Huile", "quantite" => 200, "prix_unitaire" => 6000, "type_besoin" => "Alimentaire"],
-            ["element" => "Médicaments", "quantite" => 150, "prix_unitaire" => 15000, "type_besoin" => "Santé"],
-            ["element" => "Couvertures", "quantite" => 300, "prix_unitaire" => 8000, "type_besoin" => "Urgence"]
-        ],
-        "dons" => [
-            ["element" => "Riz", "quantite" => 300, "prix_unitaire" => 0, "type" => "Alimentaire"],
-            ["element" => "Savon", "quantite" => 50, "prix_unitaire" => 2000, "type" => "Hygiène"],
-            ["element" => "Eau", "quantite" => 200, "prix_unitaire" => 0, "type" => "Urgence"],
-            ["element" => "Lait", "quantite" => 100, "prix_unitaire" => 5000, "type" => "Alimentaire"]
-        ]
-    ],
-    [
-        "ville" => "Toamasina",
-        "region" => "Atsinanana",
-        "besoins" => [
-            ["element" => "Eau", "quantite" => 1000, "prix_unitaire" => 0, "type_besoin" => "Urgence"],
-            ["element" => "Vêtements", "quantite" => 400, "prix_unitaire" => 3000, "type_besoin" => "Habillement"],
-            ["element" => "Farine", "quantite" => 300, "prix_unitaire" => 3500, "type_besoin" => "Alimentaire"]
-        ],
-        "dons" => [
-            ["element" => "Eau", "quantite" => 500, "prix_unitaire" => 0, "type" => "Urgence"],
-            ["element" => "Riz", "quantite" => 200, "prix_unitaire" => 0, "type" => "Alimentaire"],
-            ["element" => "Sardines", "quantite" => 150, "prix_unitaire" => 2500, "type" => "Alimentaire"]
-        ]
-    ],
-    [
-        "ville" => "Fianarantsoa",
-        "region" => "Haute Matsiatra",
-        "besoins" => [
-            ["element" => "Riz", "quantite" => 600, "prix_unitaire" => 2500, "type_besoin" => "Alimentaire"],
-            ["element" => "Huile", "quantite" => 150, "prix_unitaire" => 6000, "type_besoin" => "Alimentaire"],
-            ["element" => "Tentes", "quantite" => 50, "prix_unitaire" => 25000, "type_besoin" => "Urgence"]
-        ],
-        "dons" => [
-            ["element" => "Riz", "quantite" => 200, "prix_unitaire" => 0, "type" => "Alimentaire"],
-            ["element" => "Savon", "quantite" => 80, "prix_unitaire" => 2000, "type" => "Hygiène"]
-        ]
-    ]
-];
+/**
+ * Dashboard - Gestion des besoins et dons
+ * 
+ * Variables disponibles depuis le contrôleur :
+ * @var array $donnees          Données regroupées par ville (besoins + dons)
+ * @var array $statsBesoins     Statistiques des besoins par ville
+ * @var array $statsDons        Statistiques des dons par ville  
+ * @var array $statsRegionDons  Statistiques des dons par région
+ */
 
 // Fonction pour obtenir la classe de badge selon le type
 function getBadgeClass($type) {
     $types = [
         'Alimentaire' => 'bg-success',
-        'Urgence' => 'bg-danger',
-        'Santé' => 'bg-info',
-        'Hygiène' => 'bg-purple',
-        'Habillement' => 'bg-warning text-dark'
+        'Nourriture'  => 'bg-success',
+        'Urgence'     => 'bg-danger',
+        'Santé'       => 'bg-info',
+        'Hygiène'     => 'bg-purple',
+        'Habillement' => 'bg-warning text-dark',
+        'Logistique'  => 'bg-primary',
     ];
     
-    // Nettoyer le type pour la correspondance
-    $typeClean = str_replace(['é', 'è', 'ê'], ['e', 'e', 'e'], $type);
+    $typeClean = str_replace(['é', 'è', 'ê'], ['e', 'e', 'e'], $type ?? '');
     
     foreach ($types as $key => $class) {
         if (stripos($typeClean, str_replace(['é', 'è', 'ê'], ['e', 'e', 'e'], $key)) !== false) {
@@ -100,7 +64,7 @@ function getBadgeClass($type) {
     </div>
 
     <?php
-    // Calcul des statistiques globales
+    // Calcul des statistiques globales à partir des données du contrôleur
     $totalVilles = count($donnees);
     $totalBesoins = 0;
     $totalDons = 0;
@@ -114,7 +78,6 @@ function getBadgeClass($type) {
         }
         foreach ($data['dons'] as $don) {
             $totalDons += $don['quantite'];
-            $totalValeurDons += $don['quantite'] * $don['prix_unitaire'];
         }
     }
     $tauxCouverture = $totalBesoins > 0 ? round(($totalDons / $totalBesoins) * 100) : 0;
@@ -174,10 +137,8 @@ function getBadgeClass($type) {
                 }
                 
                 $totalDonsVille = 0;
-                $totalValeurDonsVille = 0;
                 foreach ($data['dons'] as $don) {
                     $totalDonsVille += $don['quantite'];
-                    $totalValeurDonsVille += $don['quantite'] * $don['prix_unitaire'];
                 }
                 
                 $progressionVille = $totalBesoinsVille > 0 ? ($totalDonsVille / $totalBesoinsVille) * 100 : 0;
@@ -249,9 +210,10 @@ function getBadgeClass($type) {
                                             </tbody>
                                             <tfoot class="table-light">
                                                 <tr>
-                                                    <th colspan="2">Total</th>
+                                                    <th>Total</th>
                                                     <th class="text-end"><?= number_format($totalBesoinsVille, 0, ',', ' ') ?></th>
                                                     <th class="text-end"><?= number_format($totalValeurBesoinsVille, 0, ',', ' ') ?> Ar</th>
+                                                    <th></th>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -268,33 +230,27 @@ function getBadgeClass($type) {
                                         <table class="table table-hover table-custom">
                                             <thead>
                                                 <tr>
-                                                    <th>Élément</th>
+                                                    <th>Description</th>
                                                     <th class="text-end">Quantité</th>
-                                                    <th class="text-end">Prix unit.</th>
-                                                    <th>Type</th>
+                                                    <th>Date</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php foreach ($data['dons'] as $don): ?>
                                                     <tr>
-                                                        <td class="fw-bold"><?= htmlspecialchars($don['element']) ?></td>
+                                                        <td class="fw-bold"><?= htmlspecialchars($don['description']) ?></td>
                                                         <td class="text-end"><?= number_format($don['quantite'], 0, ',', ' ') ?></td>
-                                                        <td class="text-end <?= $don['prix_unitaire'] == 0 ? 'price-free' : 'price-normal' ?>">
-                                                            <?= $don['prix_unitaire'] == 0 ? 'Don gratuit' : number_format($don['prix_unitaire'], 0, ',', ' ') . ' Ar' ?>
-                                                        </td>
                                                         <td>
-                                                            <span class="badge <?= getBadgeClass($don['type']) ?> badge-custom">
-                                                                <?= htmlspecialchars($don['type']) ?>
-                                                            </span>
+                                                            <small class="text-muted"><?= date('d/m/Y', strtotime($don['date'])) ?></small>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             </tbody>
                                             <tfoot class="table-light">
                                                 <tr>
-                                                    <th colspan="2">Total</th>
+                                                    <th>Total</th>
                                                     <th class="text-end"><?= number_format($totalDonsVille, 0, ',', ' ') ?></th>
-                                                    <th class="text-end"><?= number_format($totalValeurDonsVille, 0, ',', ' ') ?> Ar</th>
+                                                    <th></th>
                                                 </tr>
                                             </tfoot>
                                         </table>

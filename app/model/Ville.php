@@ -1,6 +1,6 @@
 <?php
 
-namespace app\modele;
+namespace app\model;
 
 use flight\database\PdoWrapper;
 
