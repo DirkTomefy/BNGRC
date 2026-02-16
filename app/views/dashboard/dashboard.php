@@ -30,26 +30,12 @@ function getBadgeClass($type) {
     }
     return 'bg-secondary';
 }
+
+$pageTitle = 'Gestion des besoins et dons - Madagascar';
+$currentPage = 'dashboard';
+$pageCss = ['assets/css/dashboard/dasboard.css'];
+include __DIR__ . '/../layouts/header.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des besoins et dons - Madagascar</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/dashboard/dashboard.css">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.css">
-
-    <style>
-
-    </style>
-</head>
-<body>
 
     <!-- En-tête -->
     <div class="container-fluid py-5">
@@ -299,7 +285,4 @@ function getBadgeClass($type) {
         </div>
     </div>
 
-    <!-- Bootstrap JS (optionnel pour certains composants) -->
-    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>

@@ -3,15 +3,6 @@
             --gradient-end: #6610f2;
         }
         
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-        }
-        
-        .bg-purple {
-            background-color: #6f42c1 !important;
-        }
-        
         .stat-card {
             transition: transform 0.3s, box-shadow 0.3s;
             border: none;
@@ -94,35 +85,4 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-top: 1px solid #dee2e6;
             font-weight: 500;
-        }
-        
-        .header-title {
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            animation: fadeInDown 1s ease;
-        }
-        
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .fadeInUp {
-            animation: fadeInUp 1s ease;
         }
