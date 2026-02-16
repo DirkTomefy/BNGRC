@@ -108,30 +108,31 @@ class Achat
     public function getBesoinsRestants(): array
     {
         return $this->db->fetchAll("
-            SELECT 
-                b.id,
-                b.idelement,
-                e.libele AS element_libele,
-                tb.id AS idTypeBesoin,
-                tb.libele AS type_besoin,
-                b.quantite AS quantite_demandee,
-                COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) AS quantite_donnee,
-                COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0) AS quantite_achetee,
-                (b.quantite - COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) - COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0)) AS quantite_restante,
-                e.pu AS prix_unitaire,
-                b.idVille,
-                v.libele AS ville_libele,
-                r.id AS idRegion,
-                r.libele AS region_libele,
-                b.date
-            FROM bn_besoin b
-            JOIN bn_element e ON b.idelement = e.id
-            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
-            JOIN bn_ville v ON b.idVille = v.id
-            JOIN bn_region r ON v.idRegion = r.id
-            WHERE tb.libele IN ('Nature', 'Materiel')
-            HAVING quantite_restante > 0
-            ORDER BY b.date ASC, b.id ASC
+            SELECT * FROM (
+                SELECT 
+                    b.id,
+                    b.idelement,
+                    e.libele AS element_libele,
+                    tb.id AS idTypeBesoin,
+                    tb.libele AS type_besoin,
+                    b.quantite AS quantite_demandee,
+                    COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) AS quantite_donnee,
+                    COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0) AS quantite_achetee,
+                    (b.quantite - COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) - COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0)) AS quantite_restante,
+                    e.pu AS prix_unitaire,
+                    b.idVille,
+                    v.libele AS ville_libele,
+                    r.id AS idRegion,
+                    r.libele AS region_libele,
+                    b.date
+                FROM bn_besoin b
+                JOIN bn_element e ON b.idelement = e.id
+                JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+                JOIN bn_ville v ON b.idVille = v.id
+                JOIN bn_region r ON v.idRegion = r.id
+            ) AS sub
+            WHERE sub.quantite_restante > 0
+            ORDER BY sub.date ASC, sub.id ASC
         ");
     }
 
@@ -141,31 +142,32 @@ class Achat
     public function getBesoinsRestantsByVille(int $idVille): array
     {
         return $this->db->fetchAll("
-            SELECT 
-                b.id,
-                b.idelement,
-                e.libele AS element_libele,
-                tb.id AS idTypeBesoin,
-                tb.libele AS type_besoin,
-                b.quantite AS quantite_demandee,
-                COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) AS quantite_donnee,
-                COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0) AS quantite_achetee,
-                (b.quantite - COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) - COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0)) AS quantite_restante,
-                e.pu AS prix_unitaire,
-                b.idVille,
-                v.libele AS ville_libele,
-                r.id AS idRegion,
-                r.libele AS region_libele,
-                b.date
-            FROM bn_besoin b
-            JOIN bn_element e ON b.idelement = e.id
-            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
-            JOIN bn_ville v ON b.idVille = v.id
-            JOIN bn_region r ON v.idRegion = r.id
-            WHERE tb.libele IN ('Nature', 'Materiel')
-              AND b.idVille = ?
-            HAVING quantite_restante > 0
-            ORDER BY b.date ASC, b.id ASC
+            SELECT * FROM (
+                SELECT 
+                    b.id,
+                    b.idelement,
+                    e.libele AS element_libele,
+                    tb.id AS idTypeBesoin,
+                    tb.libele AS type_besoin,
+                    b.quantite AS quantite_demandee,
+                    COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) AS quantite_donnee,
+                    COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0) AS quantite_achetee,
+                    (b.quantite - COALESCE((SELECT SUM(d.quantite) FROM bn_don d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0) - COALESCE((SELECT SUM(a.quantite) FROM bn_achat a WHERE a.idBesoin = b.id), 0)) AS quantite_restante,
+                    e.pu AS prix_unitaire,
+                    b.idVille,
+                    v.libele AS ville_libele,
+                    r.id AS idRegion,
+                    r.libele AS region_libele,
+                    b.date
+                FROM bn_besoin b
+                JOIN bn_element e ON b.idelement = e.id
+                JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+                JOIN bn_ville v ON b.idVille = v.id
+                JOIN bn_region r ON v.idRegion = r.id
+                WHERE b.idVille = ?
+            ) AS sub
+            WHERE sub.quantite_restante > 0
+            ORDER BY sub.date ASC, sub.id ASC
         ", [$idVille]);
     }
 

@@ -19,8 +19,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const montantFrais = document.getElementById('montantFrais');
     const montantTTC = document.getElementById('montantTTC');
     
-    // Taux de frais (récupéré depuis le HTML)
-    const tauxFrais = parseFloat(document.querySelector('[id="montantFrais"]').closest('tr').querySelector('td').textContent.match(/\d+/)[0]) || 10;
+    // Taux de frais (récupéré depuis l'input de configuration)
+    const tauxFraisInput = document.getElementById('tauxFraisInput');
+    const labelTaux = document.getElementById('labelTaux');
+    let tauxFrais = parseFloat(tauxFraisInput ? tauxFraisInput.value : 10) || 10;
+
+    // Mettre à jour le calcul quand le taux change
+    if (tauxFraisInput) {
+        tauxFraisInput.addEventListener('input', function () {
+            tauxFrais = parseFloat(this.value) || 0;
+            if (labelTaux) labelTaux.textContent = tauxFrais;
+            updateCalcul();
+        });
+    }
 
     function formatNumber(num) {
         return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');

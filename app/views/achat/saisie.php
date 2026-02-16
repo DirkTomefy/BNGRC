@@ -46,6 +46,34 @@ include __DIR__ . '/../layouts/header.php';
                     </div>
                 <?php endif; ?>
 
+                <!-- Configuration du taux de frais -->
+                <div class="card mb-4 border-info">
+                    <div class="card-body py-3">
+                        <form method="POST" action="/achat/taux" class="row align-items-end g-3">
+                            <div class="col-auto">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-gear-fill text-info me-1"></i>Taux de frais
+                                </h6>
+                            </div>
+                            <div class="col-auto">
+                                <div class="input-group input-group-sm" style="max-width: 180px;">
+                                    <input type="number" class="form-control" id="tauxFraisInput" name="taux" 
+                                           value="<?= $tauxFrais ?>" min="0" max="100" step="0.5" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-sm btn-info text-white">
+                                    <i class="bi bi-check-lg me-1"></i>Appliquer
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <span class="text-muted small">Taux actuel : <strong><?= $tauxFrais ?>%</strong></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="row">
                     <!-- Formulaire -->
                     <div class="col-lg-5">
@@ -139,7 +167,7 @@ include __DIR__ . '/../layouts/header.php';
                                                     <td class="text-end fw-bold"><span id="montantHT">0</span> Ar</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Frais (<?= $tauxFrais ?>%)</td>
+                                                    <td>Frais (<span id="labelTaux"><?= $tauxFrais ?></span>%)</td>
                                                     <td class="text-end text-warning"><span id="montantFrais">0</span> Ar</td>
                                                 </tr>
                                                 <tr class="table-primary">
@@ -169,7 +197,7 @@ include __DIR__ . '/../layouts/header.php';
                         <div class="card">
                             <div class="card-header bg-warning text-dark">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Besoins restants (Nature & Matériel)
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Besoins restants
                                     <span class="badge bg-dark ms-2"><?= count($besoinsRestants) ?></span>
                                 </h5>
                             </div>

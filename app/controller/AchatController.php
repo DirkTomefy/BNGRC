@@ -146,6 +146,27 @@ class AchatController
     }
 
     /**
+     * Met à jour le taux de frais
+     */
+    public function updateTaux(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $taux = (float)($_POST['taux'] ?? 10);
+
+        if ($taux < 0 || $taux > 100) {
+            $_SESSION['achat_error'] = 'Le taux doit être entre 0% et 100%.';
+        } else {
+            $this->configModel->setFraisAchatPourcent($taux);
+            $_SESSION['achat_success'] = 'Taux de frais mis à jour à ' . $taux . '%.';
+        }
+
+        $this->app->redirect('/achat/saisie');
+    }
+
+    /**
      * API : Récupère les besoins restants (pour AJAX)
      */
     public function apiBesoinsRestants(?int $villeId = null): void

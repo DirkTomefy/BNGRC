@@ -53,6 +53,7 @@ $router->post('/don/valider', [DonController::class, 'valider']);
 // Achat
 $router->get('/achat/saisie', [AchatController::class, 'saisie']);
 $router->post('/achat/saisie', [AchatController::class, 'saisie']);
+$router->post('/achat/taux', [AchatController::class, 'updateTaux']);
 $router->get('/achat/liste', [AchatController::class, 'liste']);
 $router->get('/achat/liste/@villeId', [AchatController::class, 'liste']);
 $router->get('/api/achat/besoins', [AchatController::class, 'apiBesoinsRestants']);
