@@ -1,0 +1,92 @@
+/* ============================================
+   Layout global — Navbar + Footer + Main
+   ============================================ */
+
+:root {
+    --gradient-start: #0d6efd;
+    --gradient-end: #6610f2;
+    --navbar-height: 64px;
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---- Navbar ---- */
+.bg-navbar {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) !important;
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    transition: background 0.25s ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.navbar .nav-link.active {
+    font-weight: 700;
+}
+
+/* ---- Contenu principal ---- */
+.main-content {
+    margin-top: var(--navbar-height);
+    flex: 1;
+    padding-bottom: 2rem;
+}
+
+/* ---- Footer ---- */
+.footer-custom {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #ffffffcc;
+}
+
+.footer-link {
+    color: #ffffffaa;
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+    display: inline-block;
+    padding: 2px 0;
+}
+
+.footer-link:hover {
+    color: #ffffff;
+    padding-left: 4px;
+}
+
+/* ---- Utilitaires repris du dashboard ---- */
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.header-title {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    animation: fadeInDown 1s ease;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.fadeInUp {
+    animation: fadeInUp 1s ease;
+}
