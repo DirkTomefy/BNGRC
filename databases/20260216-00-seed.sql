@@ -33,9 +33,9 @@ INSERT INTO bn_besoin (idelement, quantite, idVille, `date`) VALUES
  ((SELECT e.id FROM bn_element e WHERE e.libele = 'Gants médicaux (paire)'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toliara'), '2026-02-13 16:45:00'),
  ((SELECT e.id FROM bn_element e WHERE e.libele = 'Carburant (L)'), 400, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antananarivo'), '2026-02-14 11:20:00');
 
--- Dons
-INSERT INTO bn_don (`date`, idVille, description, quantite) VALUES
- ('2026-02-10 10:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antananarivo'), 'Don de riz pour les ménages vulnérables', 200),
- ('2026-02-11 15:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antsirabe'), 'Don d''huile de cuisine', 80),
- ('2026-02-12 09:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antsiranana'), 'Lot de savon', 300),
- ('2026-02-13 17:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toliara'), 'Gants médicaux pour le centre de santé', 150);
+INSERT INTO bn_don (`date`, idVille, idelement, description, quantite) VALUES
+ ('2026-02-10 10:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Ouagadougou'), (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 'Don de riz pour les ménages vulnérables', 200),
+ ('2026-02-11 15:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Koudougou'), (SELECT e.id FROM bn_element e WHERE e.libele = 'Huile (L)'), 'Don d''huile de cuisine', 80),
+ ('2026-02-12 09:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Ouahigouya'), (SELECT e.id FROM bn_element e WHERE e.libele = 'Savon (unité)'), 'Lot de savon', 300),
+ ('2026-02-13 17:00:00', (SELECT v.id FROM bn_ville v WHERE v.libele = 'Gaoua'), (SELECT e.id FROM bn_element e WHERE e.libele = 'Gants médicaux (paire)'), 'Gants médicaux pour le centre de santé', 150);
+
