@@ -1,0 +1,199 @@
+<?php
+
+$villes = $villes ?? [];
+$elements = $elements ?? [];
+$success = $success ?? '';
+$error = $error ?? '';
+$form = $form ?? [];
+
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie des dons - Madagascar</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/layout.css">
+    <link rel="stylesheet" href="/assets/css/besoin/saisie.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="/assets/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body>
+
+    <!-- En-tête -->
+    <div class="container-fluid py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold header-title">
+                    <i class="bi bi-heart-fill text-danger"></i> Saisie des dons
+                </h1>
+                <p class="lead text-secondary">Madagascar - Enregistrement des dons humanitaires</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <!-- Messages de succès/erreur -->
+                <?php if ($success): ?>
+                    <div class="alert alert-success alert-custom mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <?= htmlspecialchars($success) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-danger alert-custom mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <!-- Formulaire de saisie -->
+                <div class="card form-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gift-fill me-2"></i>Nouveau don
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" action="">
+                            <div class="row g-3">
+                                <!-- Ville -->
+                                <div class="col-md-6">
+                                    <label for="ville" class="form-label fw-bold">
+                                        <i class="bi bi-geo-alt text-success me-1"></i>Ville
+                                    </label>
+                                    <select class="form-select" id="ville" name="ville" required>
+                                        <option value="">Sélectionner une ville...</option>
+                                        <?php foreach ($villes as $ville): ?>
+                                            <option value="<?= $ville['id'] ?>" <?= (isset($form['ville']) && $form['ville'] == $ville['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($ville['libele']) ?> 
+                                                (<?= htmlspecialchars($ville['region_libele']) ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                
+                                <!-- Élément -->
+                                <div class="col-md-6">
+                                    <label for="element" class="form-label fw-bold">
+                                        <i class="bi bi-box text-success me-1"></i>Élément
+                                    </label>
+                                    <select class="form-select" id="element" name="element" required>
+                                        <option value="">Sélectionner un élément...</option>
+                                        <?php foreach ($elements as $element): ?>
+                                            <option value="<?= $element['id'] ?>" 
+                                                data-pu="<?= $element['pu'] ?>" 
+                                                data-type="<?= htmlspecialchars($element['type_besoin_libele']) ?>"
+                                                <?= (isset($form['element']) && $form['element'] == $element['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($element['libele']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div id="elementInfo" class="element-info d-none">
+                                        <small class="text-muted">
+                                            <strong>Type:</strong> <span id="elementType"></span><br>
+                                            <strong>Prix unitaire:</strong> <span id="elementPu"></span> Ar
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quantité -->
+                                <div class="col-md-6">
+                                    <label for="quantite" class="form-label fw-bold">
+                                        <i class="bi bi-calculator text-success me-1"></i>Quantité
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="quantite" 
+                                           name="quantite" 
+                                           min="1" 
+                                           value="<?= htmlspecialchars($form['quantite'] ?? '') ?>"
+                                           placeholder="Entrez la quantité..." 
+                                           required>
+                                </div>
+                                
+                                <!-- Date -->
+                                <div class="col-md-6">
+                                    <label for="date" class="form-label fw-bold">
+                                        <i class="bi bi-calendar text-success me-1"></i>Date
+                                    </label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="date" 
+                                           name="date" 
+                                           value="<?= htmlspecialchars($form['date'] ?? date('Y-m-d')) ?>"
+                                           required>
+                                </div>
+                                
+                                <!-- Description -->
+                                <div class="col-12">
+                                    <label for="description" class="form-label fw-bold">
+                                        <i class="bi bi-text-paragraph text-success me-1"></i>Description (optionnelle)
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="3" 
+                                              placeholder="Ajoutez une description ou des détails sur ce don..."><?= htmlspecialchars($form['description'] ?? '') ?></textarea>
+                                </div>
+                                
+                                <!-- Bouton de soumission -->
+                                <div class="col-12 text-center mt-4">
+                                    <button type="submit" class="btn btn-success btn-submit btn-lg">
+                                        <i class="bi bi-heart-fill me-2"></i>Enregistrer le don
+                                    </button>
+                                    <a href="/dashboard" class="btn btn-outline-secondary btn-lg ms-2">
+                                        <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Informations supplémentaires -->
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted mb-3">
+                            <i class="bi bi-info-circle me-2"></i>Informations
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <i class="bi bi-building me-1"></i>
+                                    <strong><?= count($villes) ?></strong> villes disponibles
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <i class="bi bi-box me-1"></i>
+                                    <strong><?= count($elements) ?></strong> éléments disponibles
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-check me-1"></i>
+                                    Date du jour: <?= date('d/m/Y') ?>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/besoin/saisie.js"></script>
+</body>
+</html>

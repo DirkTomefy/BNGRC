@@ -19,6 +19,7 @@ use app\controllers\ApiHomeController;
 
 use app\controller\DashboardController;
 use app\controller\BesoinController;
+use app\controller\DonController;
 
 /** 
  * @var Router $router 
@@ -32,6 +33,9 @@ $router->get('/dashboard/ville/@id', [DashboardController::class, 'parVille']);
 
 $router->get('/besoin/saisie', [BesoinController::class, 'saisie']);
 $router->post('/besoin/saisie', [BesoinController::class, 'saisie']);
+
+$router->get('/don/saisie', [DonController::class, 'saisie']);
+$router->post('/don/saisie', [DonController::class, 'saisie']);
 
 
 //$router->group('', function (Router $router) use ($app) {
