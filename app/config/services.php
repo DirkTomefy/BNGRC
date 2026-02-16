@@ -89,8 +89,7 @@ if (Debugger::$showBar === true && php_sapi_name() !== 'cli') {
 
 // Register Flight::db() service
 // In development, use PdoQueryCapture to log queries; in production, use PdoWrapper for performance.
-$pdoClass = Debugger::$showBar === true ? PdoQueryCapture::class : PdoWrapper::class;
-$app->register('db', $pdoClass, [ $dsn, $config['database']['user'] ?? null, $config['database']['password'] ?? null ]);
+$app->register('db', PdoWrapper::class, [ $dsn, $config['database']['user'] ?? null, $config['database']['password'] ?? null ]);
 
 /**********************************************
  *         Third-Party Integrations           *

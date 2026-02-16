@@ -20,24 +20,26 @@ class Region
 
     public function getById(int $id): ?array
     {
-        return $this->db->fetchOne("SELECT * FROM bn_region WHERE id = ?", [$id]);
+        $row = $this->db->fetchRow("SELECT * FROM bn_region WHERE id = ?", [$id]);
+        $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
+        return empty($data) ? null : $data;
     }
 
     public function create(string $libele): int
     {
-        $this->db->run("INSERT INTO bn_region (libele) VALUES (?)", [$libele]);
+        $this->db->runQuery("INSERT INTO bn_region (libele) VALUES (?)", [$libele]);
         return (int)$this->db->lastInsertId();
     }
 
     public function update(int $id, string $libele): bool
     {
-        $stmt = $this->db->run("UPDATE bn_region SET libele = ? WHERE id = ?", [$libele, $id]);
+        $stmt = $this->db->runQuery("UPDATE bn_region SET libele = ? WHERE id = ?", [$libele, $id]);
         return $stmt->rowCount() > 0;
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->run("DELETE FROM bn_region WHERE id = ?", [$id]);
+        $stmt = $this->db->runQuery("DELETE FROM bn_region WHERE id = ?", [$id]);
         return $stmt->rowCount() > 0;
     }
 }

@@ -18,6 +18,7 @@ use app\controllers\ApiVehiculeController;
 use app\controllers\ApiHomeController;
 
 use app\controller\DashboardController;
+use app\controller\BesoinController;
 
 /** 
  * @var Router $router 
@@ -28,6 +29,9 @@ $router->get('/', [DashboardController::class, 'index']);
 $router->get('/dashboard', [DashboardController::class, 'index']);
 $router->get('/dashboard/region/@id', [DashboardController::class, 'parRegion']);
 $router->get('/dashboard/ville/@id', [DashboardController::class, 'parVille']);
+
+$router->get('/besoin/saisie', [BesoinController::class, 'saisie']);
+$router->post('/besoin/saisie', [BesoinController::class, 'saisie']);
 
 
 //$router->group('', function (Router $router) use ($app) {

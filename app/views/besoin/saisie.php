@@ -1,49 +1,11 @@
 <?php
-// Inclusion des modèles et initialisation de la base de données
-require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../../config/bootstrap.php';
 
-use app\modele\Ville;
-use app\modele\Element;
-use app\modele\Besoin;
+$villes = $villes ?? [];
+$elements = $elements ?? [];
+$success = $success ?? '';
+$error = $error ?? '';
+$form = $form ?? [];
 
-// Initialisation des modèles
-$villeModel = new Ville($db);
-$elementModel = new Element($db);
-$besoinModel = new Besoin($db);
-
-// Récupération des données pour les dropdowns
-$villes = $villeModel->getAll();
-$elements = $elementModel->getAll();
-
-// Traitement du formulaire
-$success = '';
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $idVille = (int)$_POST['ville'];
-        $idElement = (int)$_POST['element'];
-        $quantite = (int)$_POST['quantite'];
-        $date = $_POST['date'];
-        
-        if (empty($idVille) || empty($idElement) || empty($quantite) || empty($date)) {
-            throw new Exception('Tous les champs sont obligatoires');
-        }
-        
-        if ($quantite <= 0) {
-            throw new Exception('La quantité doit être supérieure à 0');
-        }
-        
-        $besoinModel->create($idElement, $quantite, $idVille, $date);
-        $success = 'Besoin enregistré avec succès !';
-        
-        // Réinitialiser les valeurs du formulaire
-        $_POST = [];
-    } catch (Exception $e) {
-        $error = 'Erreur: ' . $e->getMessage();
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -54,11 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Saisie des besoins - Madagascar</title>
     
     <!-- Bootstrap 5 CSS -->
-    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/dashboard/dashboard.css">
-    <link rel="stylesheet" href="assets/css/besoin/saisie.css">
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/besoin/saisie.css">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assets/bootstrap-icons/font/bootstrap-icons.css">
 </head>
 <body>
 
@@ -111,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <select class="form-select" id="ville" name="ville" required>
                                         <option value="">Sélectionner une ville...</option>
                                         <?php foreach ($villes as $ville): ?>
-                                            <option value="<?= $ville['id'] ?>" <?= (isset($_POST['ville']) && $_POST['ville'] == $ville['id']) ? 'selected' : '' ?>>
+                                            <option value="<?= $ville['id'] ?>" <?= (isset($form['ville']) && $form['ville'] == $ville['id']) ? 'selected' : '' ?>>
                                                 <?= htmlspecialchars($ville['libele']) ?> 
                                                 (<?= htmlspecialchars($ville['region_libele']) ?>)
                                             </option>
@@ -130,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <option value="<?= $element['id'] ?>" 
                                                 data-pu="<?= $element['pu'] ?>" 
                                                 data-type="<?= htmlspecialchars($element['type_besoin_libele']) ?>"
-                                                <?= (isset($_POST['element']) && $_POST['element'] == $element['id']) ? 'selected' : '' ?>>
+                                                <?= (isset($form['element']) && $form['element'] == $element['id']) ? 'selected' : '' ?>>
                                                 <?= htmlspecialchars($element['libele']) ?>
                                             </option>
                                         <?php endforeach; ?>
@@ -153,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                            id="quantite" 
                                            name="quantite" 
                                            min="1" 
-                                           value="<?= htmlspecialchars($_POST['quantite'] ?? '') ?>"
+                                           value="<?= htmlspecialchars($form['quantite'] ?? '') ?>"
                                            placeholder="Entrez la quantité..." 
                                            required>
                                 </div>
@@ -167,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                            class="form-control" 
                                            id="date" 
                                            name="date" 
-                                           value="<?= htmlspecialchars($_POST['date'] ?? date('Y-m-d')) ?>"
+                                           value="<?= htmlspecialchars($form['date'] ?? date('Y-m-d')) ?>"
                                            required>
                                 </div>
                                 
@@ -176,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <button type="submit" class="btn btn-primary btn-submit btn-lg">
                                         <i class="bi bi-save me-2"></i>Enregistrer le besoin
                                     </button>
-                                    <a href="../dashboard/dashboard.php" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <a href="/dashboard" class="btn btn-outline-secondary btn-lg ms-2">
                                         <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
                                     </a>
                                 </div>

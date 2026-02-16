@@ -27,7 +27,7 @@ class Besoin
 
     public function getById(int $id): ?array
     {
-        return $this->db->fetchOne("
+        $row = $this->db->fetchRow("
             SELECT b.*, e.libele as element_libele, e.pu as element_pu, v.libele as ville_libele,
                    (b.quantite * e.pu) as montant_total
             FROM bn_besoin b 
@@ -35,6 +35,9 @@ class Besoin
             LEFT JOIN bn_ville v ON b.idVille = v.id 
             WHERE b.id = ?
         ", [$id]);
+
+        $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
+        return empty($data) ? null : $data;
     }
 
     public function getByVille(int $idVille): array
@@ -64,19 +67,19 @@ class Besoin
 
     public function insert(int $idElement, int $quantite, int $idVille, string $date): int
     {
-        $this->db->run("INSERT INTO bn_besoin (idelement, quantite, idVille, date) VALUES (?, ?, ?, ?)", [$idElement, $quantite, $idVille, $date]);
+        $this->db->runQuery("INSERT INTO bn_besoin (idelement, quantite, idVille, date) VALUES (?, ?, ?, ?)", [$idElement, $quantite, $idVille, $date]);
         return (int)$this->db->lastInsertId();
     }
 
     public function update(int $id, int $idElement, int $quantite, int $idVille, string $date): bool
     {
-        $stmt = $this->db->run("UPDATE bn_besoin SET idelement = ?, quantite = ?, idVille = ?, date = ? WHERE id = ?", [$idElement, $quantite, $idVille, $date, $id]);
+        $stmt = $this->db->runQuery("UPDATE bn_besoin SET idelement = ?, quantite = ?, idVille = ?, date = ? WHERE id = ?", [$idElement, $quantite, $idVille, $date, $id]);
         return $stmt->rowCount() > 0;
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->run("DELETE FROM bn_besoin WHERE id = ?", [$id]);
+        $stmt = $this->db->runQuery("DELETE FROM bn_besoin WHERE id = ?", [$id]);
         return $stmt->rowCount() > 0;
     }
 

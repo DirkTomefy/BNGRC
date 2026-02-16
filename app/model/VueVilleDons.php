@@ -20,7 +20,9 @@ class VueVilleDons
 
     public function getById(int $id): ?array
     {
-        return $this->db->fetchOne("SELECT * FROM vue_ville_dons WHERE don_id = ?", [$id]);
+        $row = $this->db->fetchRow("SELECT * FROM vue_ville_dons WHERE don_id = ?", [$id]);
+        $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
+        return empty($data) ? null : $data;
     }
 
     public function getByVille(int $villeId): array
