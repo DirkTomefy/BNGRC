@@ -1,0 +1,224 @@
+<?php
+// Inclusion des modèles et initialisation de la base de données
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../config/bootstrap.php';
+
+use app\modele\Ville;
+use app\modele\Element;
+use app\modele\Besoin;
+
+// Initialisation des modèles
+$villeModel = new Ville($db);
+$elementModel = new Element($db);
+$besoinModel = new Besoin($db);
+
+// Récupération des données pour les dropdowns
+$villes = $villeModel->getAll();
+$elements = $elementModel->getAll();
+
+// Traitement du formulaire
+$success = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $idVille = (int)$_POST['ville'];
+        $idElement = (int)$_POST['element'];
+        $quantite = (int)$_POST['quantite'];
+        $date = $_POST['date'];
+        
+        if (empty($idVille) || empty($idElement) || empty($quantite) || empty($date)) {
+            throw new Exception('Tous les champs sont obligatoires');
+        }
+        
+        if ($quantite <= 0) {
+            throw new Exception('La quantité doit être supérieure à 0');
+        }
+        
+        $besoinModel->create($idElement, $quantite, $idVille, $date);
+        $success = 'Besoin enregistré avec succès !';
+        
+        // Réinitialiser les valeurs du formulaire
+        $_POST = [];
+    } catch (Exception $e) {
+        $error = 'Erreur: ' . $e->getMessage();
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie des besoins - Madagascar</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/dashboard/dashboard.css">
+    <link rel="stylesheet" href="assets/css/besoin/saisie.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body>
+
+    <!-- En-tête -->
+    <div class="container-fluid py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold header-title">
+                    <i class="bi bi-plus-circle-fill"></i> Saisie des besoins
+                </h1>
+                <p class="lead text-secondary">Madagascar - Enregistrement des besoins humanitaires</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <!-- Messages de succès/erreur -->
+                <?php if ($success): ?>
+                    <div class="alert alert-success alert-custom mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <?= htmlspecialchars($success) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-danger alert-custom mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <!-- Formulaire de saisie -->
+                <div class="card form-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-plus me-2"></i>Nouveau besoin
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" action="">
+                            <div class="row g-3">
+                                <!-- Ville -->
+                                <div class="col-md-6">
+                                    <label for="ville" class="form-label fw-bold">
+                                        <i class="bi bi-geo-alt text-primary me-1"></i>Ville
+                                    </label>
+                                    <select class="form-select" id="ville" name="ville" required>
+                                        <option value="">Sélectionner une ville...</option>
+                                        <?php foreach ($villes as $ville): ?>
+                                            <option value="<?= $ville['id'] ?>" <?= (isset($_POST['ville']) && $_POST['ville'] == $ville['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($ville['libele']) ?> 
+                                                (<?= htmlspecialchars($ville['region_libele']) ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                
+                                <!-- Élément -->
+                                <div class="col-md-6">
+                                    <label for="element" class="form-label fw-bold">
+                                        <i class="bi bi-box text-primary me-1"></i>Élément
+                                    </label>
+                                    <select class="form-select" id="element" name="element" required>
+                                        <option value="">Sélectionner un élément...</option>
+                                        <?php foreach ($elements as $element): ?>
+                                            <option value="<?= $element['id'] ?>" 
+                                                data-pu="<?= $element['pu'] ?>" 
+                                                data-type="<?= htmlspecialchars($element['type_besoin_libele']) ?>"
+                                                <?= (isset($_POST['element']) && $_POST['element'] == $element['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($element['libele']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div id="elementInfo" class="element-info d-none">
+                                        <small class="text-muted">
+                                            <strong>Type:</strong> <span id="elementType"></span><br>
+                                            <strong>Prix unitaire:</strong> <span id="elementPu"></span> Ar
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quantité -->
+                                <div class="col-md-6">
+                                    <label for="quantite" class="form-label fw-bold">
+                                        <i class="bi bi-calculator text-primary me-1"></i>Quantité
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="quantite" 
+                                           name="quantite" 
+                                           min="1" 
+                                           value="<?= htmlspecialchars($_POST['quantite'] ?? '') ?>"
+                                           placeholder="Entrez la quantité..." 
+                                           required>
+                                </div>
+                                
+                                <!-- Date -->
+                                <div class="col-md-6">
+                                    <label for="date" class="form-label fw-bold">
+                                        <i class="bi bi-calendar text-primary me-1"></i>Date
+                                    </label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="date" 
+                                           name="date" 
+                                           value="<?= htmlspecialchars($_POST['date'] ?? date('Y-m-d')) ?>"
+                                           required>
+                                </div>
+                                
+                                <!-- Bouton de soumission -->
+                                <div class="col-12 text-center mt-4">
+                                    <button type="submit" class="btn btn-primary btn-submit btn-lg">
+                                        <i class="bi bi-save me-2"></i>Enregistrer le besoin
+                                    </button>
+                                    <a href="../dashboard/dashboard.php" class="btn btn-outline-secondary btn-lg ms-2">
+                                        <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Informations supplémentaires -->
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted mb-3">
+                            <i class="bi bi-info-circle me-2"></i>Informations
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <i class="bi bi-building me-1"></i>
+                                    <strong><?= count($villes) ?></strong> villes disponibles
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <i class="bi bi-box me-1"></i>
+                                    <strong><?= count($elements) ?></strong> éléments disponibles
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-check me-1"></i>
+                                    Date du jour: <?= date('d/m/Y') ?>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/besoin/saisie.js"></script>
+</body>
+</html>
