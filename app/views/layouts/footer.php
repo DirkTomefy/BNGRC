@@ -49,11 +49,11 @@
     </footer>
 
     <!-- Bootstrap JS -->
-    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     
     <?php if (!empty($pageJs)): ?>
         <?php foreach ((array)$pageJs as $js): ?>
-            <script src="<?= htmlspecialchars($js) ?>"></script>
+            <script src="/<?= htmlspecialchars(ltrim($js, '/')) ?>"></script>
         <?php endforeach; ?>
     <?php endif; ?>
 </body>

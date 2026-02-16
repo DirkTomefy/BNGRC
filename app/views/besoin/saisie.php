@@ -5,24 +5,12 @@ $elements = $elements ?? [];
 $success = $success ?? '';
 $error = $error ?? '';
 $form = $form ?? [];
-
+$pageTitle = 'Saisie des besoins - Madagascar';
+$currentPage = 'besoin';
+$pageCss = ['assets/css/besoin/saisie.css'];
+$pageJs = ['assets/js/besoin/saisie.js'];
+include __DIR__ . '/../layouts/header.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saisie des besoins - Madagascar</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/dashboard/dashboard.css">
-    <link rel="stylesheet" href="/assets/css/besoin/saisie.css">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="/assets/bootstrap-icons/font/bootstrap-icons.css">
-</head>
-<body>
 
     <!-- En-tête -->
     <div class="container-fluid py-5">
@@ -179,8 +167,4 @@ $form = $form ?? [];
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/besoin/saisie.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>

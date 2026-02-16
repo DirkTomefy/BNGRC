@@ -6,15 +6,15 @@
     <title><?= htmlspecialchars($pageTitle ?? 'BNGRC - Gestion des besoins et dons') ?></title>
     
     <!-- Bootstrap 5 CSS -->
-    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assets/bootstrap-icons/font/bootstrap-icons.css">
     <!-- Layout CSS -->
-    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="/assets/css/layout.css">
     
     <?php if (!empty($pageCss)): ?>
         <?php foreach ((array)$pageCss as $css): ?>
-            <link rel="stylesheet" href="<?= htmlspecialchars($css) ?>">
+            <link rel="stylesheet" href="/<?= htmlspecialchars(ltrim($css, '/')) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
 </head>
