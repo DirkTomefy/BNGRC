@@ -2,21 +2,18 @@
 
 namespace app\controller;
 
-use app\model\VueVilleBesoin;
-use app\model\VueVilleDons;
+use app\model\VueVilleRecap;
 use flight\Engine;
 
 class DashboardController
 {
     private Engine $app;
-    private VueVilleBesoin $vueVilleBesoin;
-    private VueVilleDons $vueVilleDons;
+    private VueVilleRecap $vueVilleRecap;
 
     public function __construct(Engine $app)
     {
         $this->app = $app;
-        $this->vueVilleBesoin = new VueVilleBesoin($app->db());
-        $this->vueVilleDons = new VueVilleDons($app->db());
+        $this->vueVilleRecap = new VueVilleRecap($app->db());
     }
 
     /**
@@ -24,26 +21,15 @@ class DashboardController
      */
     public function index(): void
     {
-        // Récupérer les besoins par ville
-        $besoinsParVille = $this->vueVilleBesoin->getAllVilleBesoin();
-        // Récupérer les dons par ville
-        $donsParVille = $this->vueVilleDons->getAll();
-
-        // Regrouper les données par ville
-        $donnees = $this->regrouperParVille($besoinsParVille, $donsParVille);
-
-        // Statistiques globales des besoins
-        $statsBesoins = $this->vueVilleBesoin->getBesoinVille();
-        // Statistiques globales des dons
-        $statsDons = $this->vueVilleDons->getDonVille();
-        // Statistiques par région
-        $statsRegionDons = $this->vueVilleDons->getStatsByRegion();
+        // Récupérer les données récapitulatives groupées par ville
+        $donnees = $this->vueVilleRecap->getGroupedByVille();
+        
+        // Statistiques globales
+        $statsGlobales = $this->vueVilleRecap->getStatsGlobales();
 
         $this->app->render('dashboard/dashboard', [
-            'donnees'         => $donnees,
-            'statsBesoins'    => $statsBesoins,
-            'statsDons'       => $statsDons,
-            'statsRegionDons' => $statsRegionDons,
+            'donnees'       => $donnees,
+            'statsGlobales' => $statsGlobales,
         ]);
     }
 
@@ -52,19 +38,12 @@ class DashboardController
      */
     public function parRegion(int $regionId): void
     {
-        $besoinsParVille = $this->vueVilleBesoin->getByRegion($regionId);
-        $donsParVille = $this->vueVilleDons->getByRegion($regionId);
-
-        $donnees = $this->regrouperParVille($besoinsParVille, $donsParVille);
-
-        $statsDonsRegion = $this->vueVilleDons->getDonVilleByRegion($regionId);
+        $donnees = $this->vueVilleRecap->getByRegion($regionId);
 
         $this->app->render('dashboard/dashboard', [
-            'donnees'         => $donnees,
-            'statsBesoins'    => [],
-            'statsDons'       => $statsDonsRegion,
-            'statsRegionDons' => [],
-            'regionId'        => $regionId,
+            'donnees'       => $donnees,
+            'statsGlobales' => [],
+            'regionId'      => $regionId,
         ]);
     }
 
@@ -73,75 +52,11 @@ class DashboardController
      */
     public function parVille(int $villeId): void
     {
-        $besoinsParVille = $this->vueVilleBesoin->getByVille($villeId);
-        $donsParVille = $this->vueVilleDons->getByVille($villeId);
-
-        $donnees = $this->regrouperParVille($besoinsParVille, $donsParVille);
+        $donnees = $this->vueVilleRecap->getByVille($villeId);
 
         $this->app->render('dashboard/dashboard', [
-            'donnees'         => $donnees,
-            'statsBesoins'    => [],
-            'statsDons'       => [],
-            'statsRegionDons' => [],
+            'donnees'       => $donnees,
+            'statsGlobales' => [],
         ]);
-    }
-
-    /**
-     * Regroupe les besoins et dons par ville pour l'affichage
-     */
-    private function regrouperParVille(array $besoins, array $dons): array
-    {
-        $villes = [];
-
-        // Regrouper les besoins par ville
-        foreach ($besoins as $besoin) {
-            $villeId = $besoin['ville_id'];
-            if (!isset($villes[$villeId])) {
-                $villes[$villeId] = [
-                    'ville_id'      => $villeId,
-                    'ville'         => $besoin['ville_libele'],
-                    'region_id'     => $besoin['region_id'],
-                    'region'        => $besoin['region_libele'],
-                    'besoins'       => [],
-                    'dons'          => [],
-                ];
-            }
-            if (!empty($besoin['besoin_id'])) {
-                $villes[$villeId]['besoins'][] = [
-                    'besoin_id'         => $besoin['besoin_id'],
-                    'element'           => $besoin['element_libele'],
-                    'quantite'          => (int)$besoin['quantite'],
-                    'prix_unitaire'     => (float)$besoin['element_pu'],
-                    'type_besoin'       => $besoin['type_besoin_libele'],
-                    'montant_total'     => (float)$besoin['montant_total'],
-                    'date'              => $besoin['besoin_date'],
-                ];
-            }
-        }
-
-        // Regrouper les dons par ville
-        foreach ($dons as $don) {
-            $villeId = $don['ville_id'];
-            if (!isset($villes[$villeId])) {
-                $villes[$villeId] = [
-                    'ville_id'      => $villeId,
-                    'ville'         => $don['ville_libele'],
-                    'region_id'     => $don['region_id'],
-                    'region'        => $don['region_libele'],
-                    'besoins'       => [],
-                    'dons'          => [],
-                ];
-            }
-            if (!empty($don['don_id'])) {
-                $villes[$villeId]['dons'][] = [
-                    'don_id'        => $don['don_id'],
-                    'description'   => $don['description'] ?? '',
-                    'quantite'      => (int)$don['don_quantite'],
-                    'date'          => $don['don_date'],
-                ];
-            }
-        }
-
-        return array_values($villes);
     }
 }

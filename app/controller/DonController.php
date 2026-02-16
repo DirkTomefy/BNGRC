@@ -83,12 +83,19 @@ class DonController
         $elements = $this->elementModel->getAll();
         $panierDons = $_SESSION['panier_dons'] ?? [];
 
+        // Calculer la prévisualisation de répartition FIFO pour l'affichage
+        $previsualisation = [];
+        if (!empty($panierDons)) {
+            $previsualisation = $this->calculerDistributionFIFO($panierDons);
+        }
+
         $this->app->render('don/saisie', [
-            'elements'      => $elements,
-            'success'       => $success,
-            'error'         => $error,
-            'form'          => $_POST,
-            'panierDons'    => $panierDons,
+            'elements'          => $elements,
+            'success'           => $success,
+            'error'             => $error,
+            'form'              => $_POST,
+            'panierDons'        => $panierDons,
+            'previsualisation'  => $previsualisation,
         ]);
     }
 
@@ -216,5 +223,199 @@ class DonController
             WHERE b.idelement = ?
             ORDER BY b.date ASC, b.id ASC
         ", [$idElement]);
+    }
+
+    /**
+     * Page de simulation : affiche le résultat prévu de la distribution FIFO
+     * sans modifier la BDD
+     */
+    public function simulation(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $success = '';
+        $error = '';
+
+        // Messages flash
+        if (!empty($_SESSION['simulation_success'])) {
+            $success = $_SESSION['simulation_success'];
+            unset($_SESSION['simulation_success']);
+        }
+        if (!empty($_SESSION['simulation_error'])) {
+            $error = $_SESSION['simulation_error'];
+            unset($_SESSION['simulation_error']);
+        }
+
+        $elements = $this->elementModel->getAll();
+        $panierDons = $_SESSION['panier_dons'] ?? [];
+        $resultatSimulation = $_SESSION['resultat_simulation'] ?? null;
+
+        $this->app->render('don/simulation', [
+            'elements' => $elements,
+            'panierDons' => $panierDons,
+            'resultatSimulation' => $resultatSimulation,
+            'success' => $success,
+            'error' => $error
+        ]);
+    }
+
+    /**
+     * Simuler la distribution FIFO (sans modifier la BDD)
+     */
+    public function simuler(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $panierDons = $_SESSION['panier_dons'] ?? [];
+
+        if (empty($panierDons)) {
+            $_SESSION['simulation_error'] = 'Le panier est vide, rien à simuler.';
+            $this->app->redirect('/don/simulation');
+            return;
+        }
+
+        try {
+            $resultat = $this->calculerDistributionFIFO($panierDons);
+            $_SESSION['resultat_simulation'] = $resultat;
+            $_SESSION['simulation_success'] = 'Simulation effectuée ! Vérifiez le résultat ci-dessous.';
+        } catch (\Exception $e) {
+            $_SESSION['simulation_error'] = 'Erreur lors de la simulation : ' . $e->getMessage();
+        }
+
+        $this->app->redirect('/don/simulation');
+    }
+
+    /**
+     * Valider la distribution : exécuter réellement les insertions en BDD
+     */
+    public function valider(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $resultatSimulation = $_SESSION['resultat_simulation'] ?? null;
+
+        if (empty($resultatSimulation) || empty($resultatSimulation['distributions'])) {
+            $_SESSION['simulation_error'] = 'Aucune simulation à valider. Veuillez d\'abord simuler.';
+            $this->app->redirect('/don/simulation');
+            return;
+        }
+
+        try {
+            $nbInseres = 0;
+
+            foreach ($resultatSimulation['distributions'] as $distribution) {
+                $this->donModel->insertDon(
+                    (int)$distribution['idVille'],
+                    (int)$distribution['idElement'],
+                    (int)$distribution['quantite'],
+                    $distribution['date'],
+                    $distribution['description']
+                );
+                $nbInseres++;
+            }
+
+            // Vider le panier et la simulation
+            $_SESSION['panier_dons'] = [];
+            $_SESSION['resultat_simulation'] = null;
+
+            $_SESSION['don_success'] = $nbInseres . ' don(s) distribué(s) avec succès aux villes par FIFO !';
+            $this->app->redirect('/don/saisie');
+        } catch (\Exception $e) {
+            $_SESSION['simulation_error'] = 'Erreur lors de la validation : ' . $e->getMessage();
+            $this->app->redirect('/don/simulation');
+        }
+    }
+
+    /**
+     * Calcule la distribution FIFO sans modifier la BDD
+     * Retourne un tableau avec les distributions prévues et les non-distribués
+     */
+    private function calculerDistributionFIFO(array $panierDons): array
+    {
+        $distributions = [];
+        $nonDistribues = [];
+        $parVille = [];
+
+        // Récupérer tous les besoins non satisfaits (copie pour simulation)
+        $besoinsDisponibles = [];
+
+        foreach ($panierDons as $don) {
+            $idElement = (int)$don['id_element'];
+            $quantiteRestante = (int)$don['quantite'];
+
+            // Récupérer les besoins pour cet élément
+            $besoins = $this->getBesoinsNonSatisfaits($idElement);
+
+            if (empty($besoins)) {
+                $nonDistribues[] = [
+                    'element_libele' => $don['element_libele'],
+                    'quantite' => $don['quantite'],
+                    'raison' => 'Aucun besoin trouvé pour cet élément'
+                ];
+                continue;
+            }
+
+            foreach ($besoins as $besoin) {
+                if ($quantiteRestante <= 0) {
+                    break;
+                }
+
+                $quantiteBesoin = (int)$besoin['quantite'];
+                $quantiteADonner = min($quantiteRestante, $quantiteBesoin);
+
+                $distribution = [
+                    'idVille' => (int)$besoin['idVille'],
+                    'ville_libele' => $besoin['ville_libele'],
+                    'idElement' => $idElement,
+                    'element_libele' => $don['element_libele'],
+                    'quantite' => $quantiteADonner,
+                    'date' => $don['date'],
+                    'description' => $don['description'],
+                    'element_pu' => $don['element_pu'],
+                    'montant' => $quantiteADonner * $don['element_pu']
+                ];
+
+                $distributions[] = $distribution;
+
+                // Regrouper par ville
+                $villeId = (int)$besoin['idVille'];
+                if (!isset($parVille[$villeId])) {
+                    $parVille[$villeId] = [
+                        'ville_libele' => $besoin['ville_libele'],
+                        'items' => [],
+                        'total_quantite' => 0,
+                        'total_montant' => 0
+                    ];
+                }
+                $parVille[$villeId]['items'][] = $distribution;
+                $parVille[$villeId]['total_quantite'] += $quantiteADonner;
+                $parVille[$villeId]['total_montant'] += $distribution['montant'];
+
+                $quantiteRestante -= $quantiteADonner;
+            }
+
+            if ($quantiteRestante > 0) {
+                $nonDistribues[] = [
+                    'element_libele' => $don['element_libele'],
+                    'quantite' => $quantiteRestante,
+                    'raison' => 'Quantité excédentaire (pas assez de besoins)'
+                ];
+            }
+        }
+
+        return [
+            'distributions' => $distributions,
+            'nonDistribues' => $nonDistribues,
+            'parVille' => $parVille,
+            'totalDistributions' => count($distributions),
+            'totalQuantite' => array_sum(array_column($distributions, 'quantite')),
+            'totalMontant' => array_sum(array_column($distributions, 'montant'))
+        ];
     }
 }

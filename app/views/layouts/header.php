@@ -45,9 +45,29 @@
                             <i class="bi bi-plus-circle me-1"></i>Saisie besoin
                         </a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= ($currentPage ?? '') === 'don' ? 'active' : '' ?>" href="#" 
+                           id="donDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gift me-1"></i>Dons
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="donDropdown">
+                            <li><a class="dropdown-item" href="/don/saisie"><i class="bi bi-plus-circle me-2"></i>Saisie don</a></li>
+                            <li><a class="dropdown-item" href="/don/simulation"><i class="bi bi-play-circle me-2"></i>Simulation FIFO</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= ($currentPage ?? '') === 'achat' ? 'active' : '' ?>" href="#" 
+                           id="achatDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bag me-1"></i>Achats
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="achatDropdown">
+                            <li><a class="dropdown-item" href="/achat/saisie"><i class="bi bi-plus-circle me-2"></i>Nouvel achat</a></li>
+                            <li><a class="dropdown-item" href="/achat/liste"><i class="bi bi-list-ul me-2"></i>Liste des achats</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= ($currentPage ?? '') === 'don' ? 'active' : '' ?>" href="/don/saisie">
-                            <i class="bi bi-gift me-1"></i>Saisie don
+                        <a class="nav-link <?= ($currentPage ?? '') === 'recap' ? 'active' : '' ?>" href="/recap">
+                            <i class="bi bi-bar-chart me-1"></i>Récap
                         </a>
                     </li>
                 </ul>

@@ -42,7 +42,7 @@ class BesoinController
                     throw new \Exception('La quantité doit être supérieure à 0');
                 }
 
-                $this->besoinModel->create($idElement, $quantite, $idVille, $date);
+                $this->besoinModel->insert($idElement, $quantite, $idVille, $date);
                 $success = 'Besoin enregistré avec succès !';
 
                 $_POST = [];

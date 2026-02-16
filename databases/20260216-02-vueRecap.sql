@@ -1,3 +1,4 @@
+-- Vue récapitulative ville + besoin avec détail des dons par élément
 CREATE OR REPLACE VIEW vue_ville_recap AS
 SELECT 
     v.ville_id,
@@ -16,16 +17,17 @@ SELECT
     COALESCE(v.quantite, 0) AS quantite_besoin,
     COALESCE(v.montant_total, 0) AS montant_besoin,
 
-    -- Dons correspondants
-    COALESCE(SUM(d.don_quantite), 0) AS quantite_donnee,
+    -- Dons correspondants (par ville ET par élément)
+    COALESCE(SUM(d.quantite), 0) AS quantite_donnee,
 
     -- Calcul du reste
-    (COALESCE(v.quantite, 0) - COALESCE(SUM(d.don_quantite), 0)) AS quantite_restante,
-    ((COALESCE(v.quantite, 0) - COALESCE(SUM(d.don_quantite), 0)) * COALESCE(v.element_pu, 0)) AS montant_restant
+    GREATEST(COALESCE(v.quantite, 0) - COALESCE(SUM(d.quantite), 0), 0) AS quantite_restante,
+    GREATEST((COALESCE(v.quantite, 0) - COALESCE(SUM(d.quantite), 0)) * COALESCE(v.element_pu, 0), 0) AS montant_restant
 
 FROM vue_ville_besoins v
-LEFT JOIN vue_ville_dons d 
-    ON v.ville_id = d.ville_id
+LEFT JOIN bn_don d 
+    ON v.ville_id = d.idVille 
+    AND v.element_id = d.idelement
 GROUP BY 
     v.ville_id, 
     v.ville_libele,

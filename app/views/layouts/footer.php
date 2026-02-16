@@ -53,9 +53,15 @@
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     
     <?php if (!empty($pageJs)): ?>
-        <?php foreach ((array)$pageJs as $js): ?>
-            <script src="<?= htmlspecialchars($js) ?>"></script>
-        <?php endforeach; ?>
+        <?php if (is_array($pageJs)): ?>
+            <?php foreach ($pageJs as $js): ?>
+                <script src="<?= htmlspecialchars($js) ?>"></script>
+            <?php endforeach; ?>
+        <?php elseif (is_string($pageJs) && strpos(trim($pageJs), '<script') !== false): ?>
+            <?= $pageJs ?>
+        <?php elseif (is_string($pageJs)): ?>
+            <script src="<?= htmlspecialchars($pageJs) ?>"></script>
+        <?php endif; ?>
     <?php endif; ?>
 </body>
 </html>

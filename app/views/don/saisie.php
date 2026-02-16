@@ -5,6 +5,7 @@ $success = $success ?? '';
 $error = $error ?? '';
 $form = $form ?? [];
 $panierDons = $panierDons ?? [];
+$previsualisation = $previsualisation ?? [];
 
 // Messages flash depuis la session (après redirect distribution)
 if (session_status() === PHP_SESSION_NONE) {
@@ -155,9 +156,6 @@ include __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
 
-                <!-- ============================================================ -->
-                <!-- PANIER TEMPORAIRE — Dons en attente de distribution FIFO     -->
-                <!-- ============================================================ -->
                 <?php if (!empty($panierDons)): ?>
                 <div class="card mt-4 border-0 shadow">
                     <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
@@ -180,6 +178,7 @@ include __DIR__ . '/../layouts/header.php';
                             aux villes selon les besoins les plus anciens en premier (First In, First Out).
                         </div>
 
+                        <!-- Tableau des dons dans le panier -->
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
@@ -230,25 +229,111 @@ include __DIR__ . '/../layouts/header.php';
                             </table>
                         </div>
 
+                        <!-- Prévisualisation de la répartition FIFO par ville -->
+                        <?php if (!empty($previsualisation['parVille'])): ?>
+                        <div class="mt-4">
+                            <h6 class="text-success mb-3">
+                                <i class="bi bi-geo-alt-fill me-2"></i>Prévisualisation de la répartition par ville
+                            </h6>
+                            
+                            <div class="row">
+                                <?php foreach ($previsualisation['parVille'] as $villeId => $villeData): ?>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white py-2">
+                                            <strong>
+                                                <i class="bi bi-pin-map me-1"></i>
+                                                <?= htmlspecialchars($villeData['ville_libele']) ?>
+                                            </strong>
+                                            <span class="badge bg-light text-dark float-end">
+                                                <?= count($villeData['items']) ?> élément(s)
+                                            </span>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tbody>
+                                                    <?php foreach ($villeData['items'] as $dist): ?>
+                                                    <tr>
+                                                        <td class="ps-2"><?= htmlspecialchars($dist['element_libele']) ?></td>
+                                                        <td class="text-end pe-2">
+                                                            <span class="badge bg-primary">
+                                                                <?= number_format($dist['quantite'], 0, ',', ' ') ?>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end pe-2 text-success fw-bold">
+                                                            <?= number_format($dist['montant'], 0, ',', ' ') ?> Ar
+                                                        </td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                                <tfoot class="border-top">
+                                                    <tr class="fw-bold">
+                                                        <td class="ps-2">Total</td>
+                                                        <td class="text-end pe-2">
+                                                            <span class="badge bg-dark">
+                                                                <?= number_format($villeData['total_quantite'], 0, ',', ' ') ?>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end pe-2 text-success">
+                                                            <?= number_format($villeData['total_montant'], 0, ',', ' ') ?> Ar
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Éléments non distribués (avertissement) -->
+                        <?php if (!empty($previsualisation['nonDistribues'])): ?>
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Attention : Éléments sans destination
+                            </h6>
+                            <ul class="mb-0 small">
+                                <?php foreach ($previsualisation['nonDistribues'] as $nonDist): ?>
+                                <li>
+                                    <strong><?= htmlspecialchars($nonDist['element_libele']) ?></strong> 
+                                    (qté: <?= number_format($nonDist['quantite'], 0, ',', ' ') ?>) 
+                                    — <?= htmlspecialchars($nonDist['raison']) ?>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                        <?php endif; ?>
+
                         <!-- Résumé global + bouton distribuer -->
                         <div class="total-footer p-3 mt-3 rounded">
                             <div class="row align-items-center">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="d-flex align-items-center">
                                         <i class="bi bi-gift text-success fs-4 me-3"></i>
                                         <div>
-                                            <small class="text-secondary">Total dons</small>
+                                            <small class="text-secondary">Dons dans le panier</small>
                                             <div class="fw-bold h5 mb-0"><?= count($panierDons) ?></div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="d-flex align-items-center">
-                                        <i class="bi bi-boxes text-warning fs-4 me-3"></i>
+                                        <i class="bi bi-geo-alt text-primary fs-4 me-3"></i>
                                         <div>
-                                            <small class="text-secondary">Quantité totale</small>
+                                            <small class="text-secondary">Villes bénéficiaires</small>
+                                            <div class="fw-bold h5 mb-0"><?= count($previsualisation['parVille'] ?? []) ?></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-cash-coin text-warning fs-4 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary">Montant total</small>
                                             <div class="fw-bold h5 mb-0">
-                                                <?= number_format(array_sum(array_column($panierDons, 'quantite')), 0, ',', ' ') ?>
+                                                <?= number_format($previsualisation['totalMontant'] ?? 0, 0, ',', ' ') ?> Ar
                                             </div>
                                         </div>
                                     </div>
@@ -260,7 +345,7 @@ include __DIR__ . '/../layouts/header.php';
                         <div class="text-center mt-4">
                             <form method="POST" action="/don/distribuer">
                                 <button type="submit" class="btn btn-primary btn-lg px-5 shadow"
-                                        onclick="return confirm('Confirmer la distribution FIFO de <?= count($panierDons) ?> don(s) aux besoins les plus anciens ?')">
+                                        onclick="return confirm('Confirmer la distribution FIFO de <?= count($panierDons) ?> don(s) vers <?= count($previsualisation['parVille'] ?? []) ?> ville(s) ?')">
                                     <i class="bi bi-truck me-2"></i>Distribuer les dons (FIFO)
                                 </button>
                             </form>
