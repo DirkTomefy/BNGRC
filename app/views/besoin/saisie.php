@@ -5,6 +5,10 @@ $elements = $elements ?? [];
 $success = $success ?? '';
 $error = $error ?? '';
 $form = $form ?? [];
+$pageTitle = 'Saisie des dons - Madagascar';
+$currentPage = 'don';
+$pageCss = ['/assets/css/besoin/saisie.css'];
+include __DIR__ . '/../layouts/header.php';
 
 ?>
 
@@ -15,12 +19,7 @@ $form = $form ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saisie des besoins - Madagascar</title>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/dashboard/dashboard.css">
-    <link rel="stylesheet" href="/assets/css/besoin/saisie.css">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="/assets/bootstrap-icons/font/bootstrap-icons.css">
+
 </head>
 <body>
 

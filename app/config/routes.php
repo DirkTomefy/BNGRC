@@ -36,6 +36,9 @@ $router->post('/besoin/saisie', [BesoinController::class, 'saisie']);
 
 $router->get('/don/saisie', [DonController::class, 'saisie']);
 $router->post('/don/saisie', [DonController::class, 'saisie']);
+$router->post('/don/supprimer', [DonController::class, 'supprimerDuPanier']);
+$router->post('/don/vider', [DonController::class, 'viderPanier']);
+$router->post('/don/distribuer', [DonController::class, 'distribuer']);
 
 
 //$router->group('', function (Router $router) use ($app) {

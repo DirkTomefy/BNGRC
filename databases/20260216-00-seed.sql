@@ -13,17 +13,16 @@ INSERT INTO bn_ville (idRegion, libele) VALUES
 
 -- Types de besoins
 INSERT INTO bn_typeBesoin (libele) VALUES
- ('Nourriture'),
- ('Santé'),
- ('Logistique');
+ ('Nature'),
+ ('Materiel'),
+ ('Argent');
 
--- Éléments
 INSERT INTO bn_element (libele, idtypebesoin, pu) VALUES
- ('Riz (kg)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nourriture'), 2500.00),
- ('Huile (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nourriture'), 5000.00),
- ('Savon (unité)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Santé'), 1500.00),
- ('Gants médicaux (paire)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Santé'), 2000.00),
- ('Carburant (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Logistique'), 6000.00);
+ ('Riz (kg)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 2500.00),
+ ('Huile (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 5000.00),
+ ('Savon (unité)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 1500.00),
+ ('Gants médicaux (paire)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 2000.00),
+ ('Carburant (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 6000.00);
 
 -- Besoins
 INSERT INTO bn_besoin (idelement, quantite, idVille, `date`) VALUES

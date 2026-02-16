@@ -45,9 +45,15 @@ class Don
         ", [$idVille]);
     }
 
-    public function insertDon(int $idVille, int $idElement, int $quantite): int
+    public function insertDon(int $idVille, int $idElement, int $quantite, string $date = '', string $description = ''): int
     {
-        $this->db->runQuery("INSERT INTO bn_don (idVille, idelement, quantite, date) VALUES (?, ?, ?, ?)", [$idVille, $idElement, $quantite, date('Y-m-d')]);
+        if (empty($date)) {
+            $date = date('Y-m-d H:i:s');
+        }
+        $this->db->runQuery(
+            "INSERT INTO bn_don (idVille, idelement, quantite, `date`, description) VALUES (?, ?, ?, ?, ?)",
+            [$idVille, $idElement, $quantite, $date, $description]
+        );
         return (int)$this->db->lastInsertId();
     }
 
@@ -77,7 +83,7 @@ class Don
                 'date_distribution' => date('Y-m-d H:i:s')
             ];
             
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->db->runQuery("ROLLBACK");
             $result['error'] = 'Erreur lors de la distribution: ' . $e->getMessage();
         }

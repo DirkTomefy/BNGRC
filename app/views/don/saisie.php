@@ -1,29 +1,29 @@
 <?php
 
-$villes = $villes ?? [];
 $elements = $elements ?? [];
 $success = $success ?? '';
 $error = $error ?? '';
 $form = $form ?? [];
+$panierDons = $panierDons ?? [];
 
+// Messages flash depuis la session (après redirect distribution)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!empty($_SESSION['don_success'])) {
+    $success = $_SESSION['don_success'];
+    unset($_SESSION['don_success']);
+}
+if (!empty($_SESSION['don_error'])) {
+    $error = $_SESSION['don_error'];
+    unset($_SESSION['don_error']);
+}
+
+$pageTitle = 'Saisie des dons - Madagascar';
+$currentPage = 'don';
+$pageCss = ['/assets/css/besoin/saisie.css'];
+include __DIR__ . '/../layouts/header.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saisie des dons - Madagascar</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/dashboard/dashboard.css">
-    <link rel="stylesheet" href="/assets/css/layout.css">
-    <link rel="stylesheet" href="/assets/css/besoin/saisie.css">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="/assets/bootstrap-icons/font/bootstrap-icons.css">
-</head>
-<body>
 
     <!-- En-tête -->
     <div class="container-fluid py-5">
@@ -60,30 +60,14 @@ $form = $form ?? [];
                 <div class="card form-card">
                     <div class="card-header bg-success text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-gift-fill me-2"></i>Nouveau don
+                            <i class="bi bi-gift-fill me-2"></i>Ajouter un don au panier
                         </h5>
                     </div>
                     <div class="card-body p-4">
-                        <form method="POST" action="">
+                        <form method="POST" action="/don/saisie">
                             <div class="row g-3">
-                                <!-- Ville -->
-                                <div class="col-md-6">
-                                    <label for="ville" class="form-label fw-bold">
-                                        <i class="bi bi-geo-alt text-success me-1"></i>Ville
-                                    </label>
-                                    <select class="form-select" id="ville" name="ville" required>
-                                        <option value="">Sélectionner une ville...</option>
-                                        <?php foreach ($villes as $ville): ?>
-                                            <option value="<?= $ville['id'] ?>" <?= (isset($form['ville']) && $form['ville'] == $ville['id']) ? 'selected' : '' ?>>
-                                                <?= htmlspecialchars($ville['libele']) ?> 
-                                                (<?= htmlspecialchars($ville['region_libele']) ?>)
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                
                                 <!-- Élément -->
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <label for="element" class="form-label fw-bold">
                                         <i class="bi bi-box text-success me-1"></i>Élément
                                     </label>
@@ -120,6 +104,17 @@ $form = $form ?? [];
                                            placeholder="Entrez la quantité..." 
                                            required>
                                 </div>
+                                <!-- Aperçu du total -->
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="w-100">
+                                        <label class="form-label fw-bold mb-1">
+                                            <i class="bi bi-cash-coin text-success me-1"></i>Total estimé
+                                        </label>
+                                        <div id="apercuTotal" class="alert alert-secondary py-2 px-3 mb-0">
+                                            <span id="totalMontant" class="fw-bold fs-5">0</span> <span class="text-muted">Ar</span>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 <!-- Date -->
                                 <div class="col-md-6">
@@ -142,49 +137,172 @@ $form = $form ?? [];
                                     <textarea class="form-control" 
                                               id="description" 
                                               name="description" 
-                                              rows="3" 
-                                              placeholder="Ajoutez une description ou des détails sur ce don..."><?= htmlspecialchars($form['description'] ?? '') ?></textarea>
+                                              rows="2" 
+                                              placeholder="Ajoutez une description..."><?= htmlspecialchars($form['description'] ?? '') ?></textarea>
                                 </div>
                                 
-                                <!-- Bouton de soumission -->
+                                <!-- Boutons -->
                                 <div class="col-12 text-center mt-4">
                                     <button type="submit" class="btn btn-success btn-submit btn-lg">
-                                        <i class="bi bi-heart-fill me-2"></i>Enregistrer le don
+                                        <i class="bi bi-plus-circle me-2"></i>Ajouter au panier
                                     </button>
                                     <a href="/dashboard" class="btn btn-outline-secondary btn-lg ms-2">
-                                        <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
+                                        <i class="bi bi-arrow-left me-2"></i>Retour
                                     </a>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
-                
-                <!-- Informations supplémentaires -->
+
+                <!-- ============================================================ -->
+                <!-- PANIER TEMPORAIRE — Dons en attente de distribution FIFO     -->
+                <!-- ============================================================ -->
+                <?php if (!empty($panierDons)): ?>
+                <div class="card mt-4 border-0 shadow">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-cart-fill me-2"></i>Panier de dons en attente
+                            <span class="badge bg-dark ms-2"><?= count($panierDons) ?> don(s)</span>
+                        </h5>
+                        <form method="POST" action="/don/vider" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                    onclick="return confirm('Vider tout le panier ?')">
+                                <i class="bi bi-trash me-1"></i>Vider le panier
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Distribution FIFO :</strong> Les dons seront répartis automatiquement
+                            aux villes selon les besoins les plus anciens en premier (First In, First Out).
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Élément</th>
+                                        <th>Type</th>
+                                        <th class="text-end">Quantité</th>
+                                        <th class="text-end">P.U.</th>
+                                        <th class="text-end">Montant</th>
+                                        <th>Date</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($panierDons as $index => $item): ?>
+                                    <tr>
+                                        <td class="text-muted"><?= $index + 1 ?></td>
+                                        <td class="fw-bold"><?= htmlspecialchars($item['element_libele']) ?></td>
+                                        <td>
+                                            <span class="badge bg-secondary badge-custom"><?= htmlspecialchars($item['type_besoin']) ?></span>
+                                        </td>
+                                        <td class="text-end"><?= number_format($item['quantite'], 0, ',', ' ') ?></td>
+                                        <td class="text-end"><?= number_format($item['element_pu'], 0, ',', ' ') ?> Ar</td>
+                                        <td class="text-end fw-bold"><?= number_format($item['quantite'] * $item['element_pu'], 0, ',', ' ') ?> Ar</td>
+                                        <td><small class="text-muted"><?= date('d/m/Y', strtotime($item['date'])) ?></small></td>
+                                        <td class="text-center">
+                                            <form method="POST" action="/don/supprimer" class="d-inline">
+                                                <input type="hidden" name="index" value="<?= $index ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Retirer">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <?php if (!empty($item['description'])): ?>
+                                    <tr>
+                                        <td></td>
+                                        <td colspan="7" class="py-1">
+                                            <small class="text-muted fst-italic">
+                                                <i class="bi bi-chat-left-text me-1"></i><?= htmlspecialchars($item['description']) ?>
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Résumé global + bouton distribuer -->
+                        <div class="total-footer p-3 mt-3 rounded">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-gift text-success fs-4 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary">Total dons</small>
+                                            <div class="fw-bold h5 mb-0"><?= count($panierDons) ?></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-boxes text-warning fs-4 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary">Quantité totale</small>
+                                            <div class="fw-bold h5 mb-0">
+                                                <?= number_format(array_sum(array_column($panierDons, 'quantite')), 0, ',', ' ') ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton DISTRIBUER -->
+                        <div class="text-center mt-4">
+                            <form method="POST" action="/don/distribuer">
+                                <button type="submit" class="btn btn-primary btn-lg px-5 shadow"
+                                        onclick="return confirm('Confirmer la distribution FIFO de <?= count($panierDons) ?> don(s) aux besoins les plus anciens ?')">
+                                    <i class="bi bi-truck me-2"></i>Distribuer les dons (FIFO)
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+                <?php else: ?>
+                <!-- Panier vide -->
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-body text-center py-4">
+                        <i class="bi bi-cart-x fs-1 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">Le panier est vide. Ajoutez des dons via le formulaire ci-dessus.</p>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- Informations -->
                 <div class="card mt-4 border-0 shadow-sm">
                     <div class="card-body">
                         <h6 class="card-title text-muted mb-3">
                             <i class="bi bi-info-circle me-2"></i>Informations
                         </h6>
                         <div class="row">
-                            <div class="col-md-4">
-                                <small class="text-muted">
-                                    <i class="bi bi-building me-1"></i>
-                                    <strong><?= count($villes) ?></strong> villes disponibles
-                                </small>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <small class="text-muted">
                                     <i class="bi bi-box me-1"></i>
                                     <strong><?= count($elements) ?></strong> éléments disponibles
                                 </small>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <small class="text-muted">
                                     <i class="bi bi-calendar-check me-1"></i>
                                     Date du jour: <?= date('d/m/Y') ?>
                                 </small>
                             </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="bi bi-arrow-repeat me-1"></i>
+                                <strong>Mode FIFO :</strong> Les dons sont automatiquement distribués aux besoins les plus anciens en priorité.
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -192,8 +310,5 @@ $form = $form ?? [];
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/assets/js/besoin/saisie.js"></script>
-</body>
-</html>
+<?php $pageJs = ['/assets/js/don/saisie-total.js']; ?>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>
