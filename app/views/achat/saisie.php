@@ -9,7 +9,7 @@ $form = $form ?? [];
 
 $pageTitle = 'Saisie des achats - BNGRC';
 $currentPage = 'achat';
-$pageCss = ['/assets/css/besoin/saisie.css'];
+$pageCss = ['assets/css/besoin/saisie.css'];
 include __DIR__ . '/../layouts/header.php';
 ?>
 
@@ -56,7 +56,7 @@ include __DIR__ . '/../layouts/header.php';
                                 </h5>
                             </div>
                             <div class="card-body p-4">
-                                <form method="POST" action="<?= htmlspecialchars($toUrl('/achat/saisie')) ?>" id="formAchat">
+                                <form method="POST" action="<?= htmlspecialchars($baseUrl . '/achat/saisie') ?>" id="formAchat">
                                     
                                     <!-- Filtre par ville (optionnel) -->
                                     <div class="mb-3">
@@ -155,7 +155,7 @@ include __DIR__ . '/../layouts/header.php';
                                         <button type="submit" class="btn btn-primary btn-lg">
                                             <i class="bi bi-bag-check me-2"></i>Valider l'achat
                                         </button>
-                                        <a href="<?= htmlspecialchars($toUrl('/achat/liste')) ?>" class="btn btn-outline-secondary">
+                                        <a href="<?= htmlspecialchars($baseUrl . '/achat/liste') ?>" class="btn btn-outline-secondary">
                                             <i class="bi bi-list-ul me-2"></i>Voir la liste des achats
                                         </a>
                                     </div>
@@ -224,5 +224,5 @@ include __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 
-<?php $pageJs = ['/assets/js/achat/saisie.js']; ?>
+<?php $pageJs = ['assets/js/achat/saisie.js']; ?>
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

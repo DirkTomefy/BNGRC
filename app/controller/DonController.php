@@ -3,8 +3,10 @@
 namespace app\controller;
 
 use app\model\Besoin;
+use app\model\Distribution;
 use app\model\Don;
 use app\model\Element;
+use app\model\Stock;
 use flight\Engine;
 
 class DonController
@@ -13,6 +15,8 @@ class DonController
     private Element $elementModel;
     private Don $donModel;
     private Besoin $besoinModel;
+    private Stock $stockModel;
+    private Distribution $distributionModel;
 
     public function __construct(Engine $app)
     {
@@ -20,12 +24,13 @@ class DonController
         $this->elementModel = new Element($app->db());
         $this->donModel = new Don($app->db());
         $this->besoinModel = new Besoin($app->db());
+        $this->stockModel = new Stock($app->db());
+        $this->distributionModel = new Distribution($app->db());
     }
 
     /**
-     * Affiche le formulaire de saisie + traite l'ajout au panier temporaire (session)
-     * L'utilisateur saisit uniquement l'élément, quantité, date et description.
-     * Pas de sélection de ville : la répartition se fait en FIFO lors de la distribution.
+     * Affiche le formulaire de saisie des dons
+     * Les dons vont directement dans le STOCK GLOBAL (pas de ville)
      */
     public function saisie(): void
     {
@@ -35,6 +40,16 @@ class DonController
 
         $success = '';
         $error = '';
+
+        // Messages flash
+        if (!empty($_SESSION['don_success'])) {
+            $success = $_SESSION['don_success'];
+            unset($_SESSION['don_success']);
+        }
+        if (!empty($_SESSION['don_error'])) {
+            $error = $_SESSION['don_error'];
+            unset($_SESSION['don_error']);
+        }
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             try {
@@ -51,14 +66,14 @@ class DonController
                     throw new \Exception('La quantité doit être supérieure à 0');
                 }
 
-                // Récupérer les libellés pour l'affichage dans le tableau temporaire
+                // Récupérer les infos de l'élément
                 $elementInfo = $this->elementModel->getById($idElement);
 
                 if (!$elementInfo) {
                     throw new \Exception('Élément invalide');
                 }
 
-                // Ajouter au panier en session
+                // Ajouter au panier en session (pour revue avant ajout au stock)
                 if (!isset($_SESSION['panier_dons'])) {
                     $_SESSION['panier_dons'] = [];
                 }
@@ -73,7 +88,7 @@ class DonController
                     'description'       => $description,
                 ];
 
-                $success = 'Don ajouté au panier ! Vous pouvez continuer à ajouter ou distribuer.';
+                $success = 'Don ajouté au panier ! Vous pouvez continuer ou valider pour ajouter au stock.';
                 $_POST = [];
             } catch (\Exception $e) {
                 $error = 'Erreur: ' . $e->getMessage();
@@ -83,11 +98,11 @@ class DonController
         $elements = $this->elementModel->getAll();
         $panierDons = $_SESSION['panier_dons'] ?? [];
 
-        // Calculer la prévisualisation de répartition FIFO pour l'affichage
-        $previsualisation = [];
-        if (!empty($panierDons)) {
-            $previsualisation = $this->calculerDistributionFIFO($panierDons);
-        }
+        // Récupérer le stock disponible
+        $stockDisponible = $this->stockModel->getStockDisponible();
+
+        // Récap du stock
+        $stockRecap = $this->stockModel->getRecapParType();
 
         $this->app->render('don/saisie', [
             'elements'          => $elements,
@@ -95,7 +110,8 @@ class DonController
             'error'             => $error,
             'form'              => $_POST,
             'panierDons'        => $panierDons,
-            'previsualisation'  => $previsualisation,
+            'stockDisponible'   => $stockDisponible,
+            'stockRecap'        => $stockRecap,
         ]);
     }
 
@@ -131,13 +147,10 @@ class DonController
     }
 
     /**
-     * Distribue tous les dons du panier en FIFO :
-     * Pour chaque don du panier, on cherche le besoin le plus ancien (par date ASC, id ASC)
-     * qui demande le même élément et qui n'est pas encore satisfait.
-     * Le don est inséré dans bn_don avec l'idVille du besoin trouvé.
-     * Si aucun besoin n'existe pour cet élément, le don est ignoré (ou signalé).
+     * Valide les dons du panier et les ajoute au STOCK GLOBAL
+     * (PAS de distribution aux villes - ça se fait dans la page simulation)
      */
-    public function distribuer(): void
+    public function ajouterAuStock(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -146,88 +159,39 @@ class DonController
         $panierDons = $_SESSION['panier_dons'] ?? [];
 
         if (empty($panierDons)) {
-            $_SESSION['don_error'] = 'Le panier est vide, rien à distribuer.';
+            $_SESSION['don_error'] = 'Le panier est vide, rien à ajouter au stock.';
             $this->app->redirect('/don/saisie');
             return;
         }
 
         try {
-            $nbDistribues = 0;
-            $nonDistribues = [];
+            $nbAjoutes = 0;
 
             foreach ($panierDons as $don) {
-                $quantiteRestante = (int)$don['quantite'];
-                $idElement = (int)$don['id_element'];
-
-                // Récupérer les besoins non satisfaits pour cet élément, triés FIFO (date ASC, id ASC)
-                $besoins = $this->getBesoinsNonSatisfaits($idElement);
-
-                if (empty($besoins)) {
-                    $nonDistribues[] = $don['element_libele'] . ' (qté: ' . $don['quantite'] . ')';
-                    continue;
-                }
-
-                // Distribuer en FIFO sur les besoins les plus anciens
-                foreach ($besoins as $besoin) {
-                    if ($quantiteRestante <= 0) {
-                        break;
-                    }
-
-                    $quantiteBesoin = (int)$besoin['quantite'];
-                    $quantiteADonner = min($quantiteRestante, $quantiteBesoin);
-
-                    // Insérer le don dans bn_don avec la ville du besoin
-                    $this->donModel->insertDon(
-                        (int)$besoin['idVille'],
-                        $idElement,
-                        $quantiteADonner,
-                        $don['date'],
-                        $don['description']
-                    );
-
-                    $quantiteRestante -= $quantiteADonner;
-                    $nbDistribues++;
-                }
-
-                // S'il reste de la quantité non distribuée, on le signale
-                if ($quantiteRestante > 0) {
-                    $nonDistribues[] = $don['element_libele'] . ' (reste: ' . $quantiteRestante . ')';
-                }
+                // Insérer directement dans bn_don (va au stock global)
+                $this->donModel->insert(
+                    (int)$don['id_element'],
+                    (int)$don['quantite'],
+                    $don['date'],
+                    $don['description']
+                );
+                $nbAjoutes++;
             }
 
-            // Vider le panier après distribution
+            // Vider le panier après ajout au stock
             $_SESSION['panier_dons'] = [];
 
-            $message = $nbDistribues . ' don(s) distribué(s) avec succès aux villes par FIFO !';
-            if (!empty($nonDistribues)) {
-                $message .= ' | Non distribués (aucun besoin trouvé) : ' . implode(', ', $nonDistribues);
-            }
-            $_SESSION['don_success'] = $message;
+            $_SESSION['don_success'] = $nbAjoutes . ' don(s) ajouté(s) au stock avec succès ! Allez sur la page Distribution pour assigner aux villes.';
         } catch (\Exception $e) {
-            $_SESSION['don_error'] = 'Erreur lors de la distribution : ' . $e->getMessage();
+            $_SESSION['don_error'] = 'Erreur lors de l\'ajout au stock : ' . $e->getMessage();
         }
 
         $this->app->redirect('/don/saisie');
     }
 
     /**
-     * Récupère les besoins non satisfaits pour un élément donné, triés FIFO (date ASC, id ASC)
-     */
-    private function getBesoinsNonSatisfaits(int $idElement): array
-    {
-        return $this->app->db()->fetchAll("
-            SELECT b.id, b.idelement, b.quantite, b.idVille, b.date,
-                   v.libele as ville_libele
-            FROM bn_besoin b
-            LEFT JOIN bn_ville v ON b.idVille = v.id
-            WHERE b.idelement = ?
-            ORDER BY b.date ASC, b.id ASC
-        ", [$idElement]);
-    }
-
-    /**
-     * Page de simulation : affiche le résultat prévu de la distribution FIFO
-     * sans modifier la BDD
+     * Page de simulation/distribution : affiche le stock disponible et les besoins des villes
+     * Permet de distribuer le stock aux villes selon les besoins FIFO
      */
     public function simulation(): void
     {
@@ -248,21 +212,30 @@ class DonController
             unset($_SESSION['simulation_error']);
         }
 
-        $elements = $this->elementModel->getAll();
-        $panierDons = $_SESSION['panier_dons'] ?? [];
+        // Stock disponible
+        $stockDisponible = $this->stockModel->getStockDisponible();
+
+        // Besoins non satisfaits par ville
+        $besoinsParVille = $this->besoinModel->getBesoinsParVille();
+
+        // Récap global
+        $recapGlobal = $this->stockModel->getRecapGlobal();
+
+        // Résultat de la simulation (si elle a été lancée)
         $resultatSimulation = $_SESSION['resultat_simulation'] ?? null;
 
         $this->app->render('don/simulation', [
-            'elements' => $elements,
-            'panierDons' => $panierDons,
-            'resultatSimulation' => $resultatSimulation,
-            'success' => $success,
-            'error' => $error
+            'stockDisponible'       => $stockDisponible,
+            'besoinsParVille'       => $besoinsParVille,
+            'recapGlobal'           => $recapGlobal,
+            'resultatSimulation'    => $resultatSimulation,
+            'success'               => $success,
+            'error'                 => $error
         ]);
     }
 
     /**
-     * Simuler la distribution FIFO (sans modifier la BDD)
+     * Simuler la distribution FIFO depuis le stock vers les villes
      */
     public function simuler(): void
     {
@@ -270,18 +243,19 @@ class DonController
             session_start();
         }
 
-        $panierDons = $_SESSION['panier_dons'] ?? [];
+        // Vérifier qu'il y a du stock disponible
+        $stockDisponible = $this->stockModel->getStockDisponible();
 
-        if (empty($panierDons)) {
-            $_SESSION['simulation_error'] = 'Le panier est vide, rien à simuler.';
+        if (empty($stockDisponible)) {
+            $_SESSION['simulation_error'] = 'Aucun stock disponible pour la distribution.';
             $this->app->redirect('/don/simulation');
             return;
         }
 
         try {
-            $resultat = $this->calculerDistributionFIFO($panierDons);
+            $resultat = $this->calculerDistributionFIFO();
             $_SESSION['resultat_simulation'] = $resultat;
-            $_SESSION['simulation_success'] = 'Simulation effectuée ! Vérifiez le résultat ci-dessous.';
+            $_SESSION['simulation_success'] = 'Simulation effectuée ! Vérifiez le résultat ci-dessous puis validez pour distribuer.';
         } catch (\Exception $e) {
             $_SESSION['simulation_error'] = 'Erreur lors de la simulation : ' . $e->getMessage();
         }
@@ -290,7 +264,7 @@ class DonController
     }
 
     /**
-     * Valider la distribution : exécuter réellement les insertions en BDD
+     * Valider la distribution : exécuter réellement les assignations du stock aux villes
      */
     public function valider(): void
     {
@@ -307,55 +281,109 @@ class DonController
         }
 
         try {
-            $nbInseres = 0;
+            $nbDistribues = 0;
+            $totalQuantite = 0;
 
             foreach ($resultatSimulation['distributions'] as $distribution) {
-                $this->donModel->insertDon(
+                // Créer l'enregistrement de distribution
+                $this->distributionModel->insert(
                     (int)$distribution['idVille'],
                     (int)$distribution['idElement'],
                     (int)$distribution['quantite'],
-                    $distribution['date'],
-                    $distribution['description']
+                    'simulation',
+                    (int)$distribution['besoin_id']
                 );
-                $nbInseres++;
+
+                $nbDistribues++;
+                $totalQuantite += (int)$distribution['quantite'];
+
+                // Marquer le besoin comme satisfait si entièrement couvert
+                if (!empty($distribution['besoin_satisfait'])) {
+                    $this->besoinModel->marquerSatisfait((int)$distribution['besoin_id']);
+                }
             }
 
-            // Vider le panier et la simulation
-            $_SESSION['panier_dons'] = [];
+            // Vider la simulation
             $_SESSION['resultat_simulation'] = null;
 
-            $_SESSION['don_success'] = $nbInseres . ' don(s) distribué(s) avec succès aux villes par FIFO !';
-            $this->app->redirect('/don/saisie');
+            $_SESSION['simulation_success'] = $totalQuantite . ' unité(s) distribuée(s) vers ' . $nbDistribues . ' besoin(s) avec succès !';
         } catch (\Exception $e) {
-            $_SESSION['simulation_error'] = 'Erreur lors de la validation : ' . $e->getMessage();
-            $this->app->redirect('/don/simulation');
+            $_SESSION['simulation_error'] = 'Erreur lors de la distribution : ' . $e->getMessage();
         }
+
+        $this->app->redirect('/don/simulation');
     }
 
     /**
-     * Calcule la distribution FIFO sans modifier la BDD
-     * Retourne un tableau avec les distributions prévues et les non-distribués
+     * Distribution automatique (sans simulation)
      */
-    private function calculerDistributionFIFO(array $panierDons): array
+    public function distribuerAuto(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        try {
+            $resultat = $this->distributionModel->distribuerAuto();
+
+            if (!empty($resultat['errors'])) {
+                $_SESSION['simulation_error'] = implode(', ', $resultat['errors']);
+            } else {
+                $_SESSION['simulation_success'] = $resultat['summary']['total_quantite'] . ' unité(s) distribuée(s) automatiquement !';
+            }
+        } catch (\Exception $e) {
+            $_SESSION['simulation_error'] = 'Erreur lors de la distribution automatique : ' . $e->getMessage();
+        }
+
+        $this->app->redirect('/don/simulation');
+    }
+
+    /**
+     * Récupère les besoins non satisfaits pour un élément donné, triés FIFO (date ASC, id ASC)
+     */
+    private function getBesoinsNonSatisfaits(int $idElement): array
+    {
+        return $this->app->db()->fetchAll("
+            SELECT b.id, b.idelement, b.quantite, b.idVille, b.date,
+                   v.libele AS ville_libele,
+                   COALESCE((
+                       SELECT SUM(d.quantite) 
+                       FROM bn_distribution d 
+                       WHERE d.idVille = b.idVille AND d.idelement = b.idelement
+                   ), 0) AS deja_recu
+            FROM bn_besoin b
+            LEFT JOIN bn_ville v ON b.idVille = v.id
+            WHERE b.idelement = ?
+              AND (b.satisfait = 0 OR b.satisfait IS NULL)
+            ORDER BY b.date ASC, b.id ASC
+        ", [$idElement]);
+    }
+
+    /**
+     * Calcule la distribution FIFO depuis le stock vers les besoins
+     * Retourne un tableau avec les distributions prévues
+     */
+    private function calculerDistributionFIFO(): array
     {
         $distributions = [];
         $nonDistribues = [];
         $parVille = [];
 
-        // Récupérer tous les besoins non satisfaits (copie pour simulation)
-        $besoinsDisponibles = [];
+        // Récupérer le stock disponible
+        $stockDisponible = $this->stockModel->getStockDisponible();
 
-        foreach ($panierDons as $don) {
-            $idElement = (int)$don['id_element'];
-            $quantiteRestante = (int)$don['quantite'];
+        foreach ($stockDisponible as $stock) {
+            $idElement = (int)$stock['idelement'];
+            $quantiteStock = (int)$stock['stock_disponible'];
+            $quantiteRestante = $quantiteStock;
 
-            // Récupérer les besoins pour cet élément
+            // Récupérer les besoins FIFO pour cet élément
             $besoins = $this->getBesoinsNonSatisfaits($idElement);
 
             if (empty($besoins)) {
                 $nonDistribues[] = [
-                    'element_libele' => $don['element_libele'],
-                    'quantite' => $don['quantite'],
+                    'element_libele' => $stock['element_libele'],
+                    'quantite' => $quantiteStock,
                     'raison' => 'Aucun besoin trouvé pour cet élément'
                 ];
                 continue;
@@ -366,19 +394,25 @@ class DonController
                     break;
                 }
 
-                $quantiteBesoin = (int)$besoin['quantite'];
+                $quantiteBesoin = (int)$besoin['quantite'] - (int)$besoin['deja_recu'];
+                
+                if ($quantiteBesoin <= 0) {
+                    continue;
+                }
+
                 $quantiteADonner = min($quantiteRestante, $quantiteBesoin);
 
                 $distribution = [
-                    'idVille' => (int)$besoin['idVille'],
-                    'ville_libele' => $besoin['ville_libele'],
-                    'idElement' => $idElement,
-                    'element_libele' => $don['element_libele'],
-                    'quantite' => $quantiteADonner,
-                    'date' => $don['date'],
-                    'description' => $don['description'],
-                    'element_pu' => $don['element_pu'],
-                    'montant' => $quantiteADonner * $don['element_pu']
+                    'idVille'           => (int)$besoin['idVille'],
+                    'ville_libele'      => $besoin['ville_libele'],
+                    'idElement'         => $idElement,
+                    'element_libele'    => $stock['element_libele'],
+                    'type_besoin'       => $stock['type_besoin'],
+                    'quantite'          => $quantiteADonner,
+                    'prix_unitaire'     => (float)$stock['prix_unitaire'],
+                    'montant'           => $quantiteADonner * (float)$stock['prix_unitaire'],
+                    'besoin_id'         => (int)$besoin['id'],
+                    'besoin_satisfait'  => ($quantiteADonner >= $quantiteBesoin)
                 ];
 
                 $distributions[] = $distribution;
@@ -400,22 +434,23 @@ class DonController
                 $quantiteRestante -= $quantiteADonner;
             }
 
+            // Stock excédentaire
             if ($quantiteRestante > 0) {
                 $nonDistribues[] = [
-                    'element_libele' => $don['element_libele'],
+                    'element_libele' => $stock['element_libele'],
                     'quantite' => $quantiteRestante,
-                    'raison' => 'Quantité excédentaire (pas assez de besoins)'
+                    'raison' => 'Stock excédentaire (pas assez de besoins)'
                 ];
             }
         }
 
         return [
-            'distributions' => $distributions,
-            'nonDistribues' => $nonDistribues,
-            'parVille' => $parVille,
-            'totalDistributions' => count($distributions),
-            'totalQuantite' => array_sum(array_column($distributions, 'quantite')),
-            'totalMontant' => array_sum(array_column($distributions, 'montant'))
+            'distributions'         => $distributions,
+            'nonDistribues'         => $nonDistribues,
+            'parVille'              => $parVille,
+            'totalDistributions'    => count($distributions),
+            'totalQuantite'         => array_sum(array_column($distributions, 'quantite')),
+            'totalMontant'          => array_sum(array_column($distributions, 'montant'))
         ];
     }
 }

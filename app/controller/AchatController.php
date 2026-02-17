@@ -3,31 +3,28 @@
 namespace app\controller;
 
 use app\model\Achat;
-use app\model\Config;
-use app\model\Ville;
 use app\model\Element;
-use app\model\Besoin;
+use app\model\Stock;
 use flight\Engine;
 
 class AchatController
 {
     private Engine $app;
     private Achat $achatModel;
-    private Config $configModel;
-    private Ville $villeModel;
     private Element $elementModel;
+    private Stock $stockModel;
 
     public function __construct(Engine $app)
     {
         $this->app = $app;
         $this->achatModel = new Achat($app->db());
-        $this->configModel = new Config($app->db());
-        $this->villeModel = new Ville($app->db());
         $this->elementModel = new Element($app->db());
+        $this->stockModel = new Stock($app->db());
     }
 
     /**
      * Page de saisie des achats
+     * L'argent pour les achats provient des dons en argent
      */
     public function saisie(): void
     {
@@ -48,141 +45,176 @@ class AchatController
             unset($_SESSION['achat_error']);
         }
 
+        // Argent disponible pour les achats
+        $argentDisponible = $this->stockModel->getArgentDisponible();
+
         // Traitement POST
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             try {
-                $idBesoin = (int)($_POST['besoin'] ?? 0);
+                $idElement = (int)($_POST['element'] ?? 0);
                 $quantite = (int)($_POST['quantite'] ?? 0);
+                $prixUnitaire = (float)($_POST['prix_unitaire'] ?? 0);
                 $date = $_POST['date'] ?? date('Y-m-d');
 
-                if (empty($idBesoin) || empty($quantite)) {
-                    throw new \Exception('Veuillez sélectionner un besoin et une quantité');
+                if (empty($idElement) || empty($quantite)) {
+                    throw new \Exception('Veuillez sélectionner un élément et une quantité');
                 }
 
                 if ($quantite <= 0) {
                     throw new \Exception('La quantité doit être supérieure à 0');
                 }
 
-                // Récupérer les infos du besoin
-                $besoinModel = new Besoin($this->app->db());
-                $besoin = $besoinModel->getById($idBesoin);
-
-                if (!$besoin) {
-                    throw new \Exception('Besoin non trouvé');
+                if ($prixUnitaire <= 0) {
+                    throw new \Exception('Le prix unitaire doit être supérieur à 0');
                 }
 
-                // Vérifier si un don existe déjà pour cet élément dans cette ville
-                if ($this->achatModel->verifierDonExistant((int)$besoin['idelement'], (int)$besoin['idVille'])) {
-                    throw new \Exception('Un don existe déjà pour cet élément dans cette ville. Utilisez le don existant au lieu d\'acheter.');
+                $montantTotal = $quantite * $prixUnitaire;
+
+                // Vérifier si on a assez d'argent
+                if ($montantTotal > $argentDisponible) {
+                    throw new \Exception("Fonds insuffisants. Disponible: " . number_format($argentDisponible, 2) . " Ar, Requis: " . number_format($montantTotal, 2) . " Ar");
                 }
 
-                // Récupérer le taux de frais
-                $tauxFrais = $this->configModel->getFraisAchatPourcent();
+                // Récupérer les infos de l'élément
+                $elementInfo = $this->elementModel->getById($idElement);
+                if (!$elementInfo) {
+                    throw new \Exception('Élément invalide');
+                }
 
-                // Récupérer le prix unitaire
-                $element = $this->elementModel->getById((int)$besoin['idelement']);
-                $prixUnitaire = (float)($element['pu'] ?? 0);
+                // Ajouter au panier en session
+                if (!isset($_SESSION['panier_achats'])) {
+                    $_SESSION['panier_achats'] = [];
+                }
 
-                // Insérer l'achat
-                $this->achatModel->insert(
-                    $idBesoin,
-                    (int)$besoin['idVille'],
-                    (int)$besoin['idelement'],
-                    $quantite,
-                    $prixUnitaire,
-                    $tauxFrais,
-                    $date . ' ' . date('H:i:s')
-                );
+                $_SESSION['panier_achats'][] = [
+                    'id_element'        => $idElement,
+                    'element_libele'    => $elementInfo['libele'],
+                    'type_besoin'       => $elementInfo['type_besoin_libele'] ?? '',
+                    'quantite'          => $quantite,
+                    'prix_unitaire'     => $prixUnitaire,
+                    'montant'           => $montantTotal,
+                    'date'              => $date,
+                ];
 
-                $_SESSION['achat_success'] = 'Achat enregistré avec succès !';
-                $this->app->redirect('/achat/saisie');
-                return;
+                $success = 'Achat ajouté au panier ! Vous pouvez continuer ou valider.';
+                $_POST = [];
             } catch (\Exception $e) {
                 $error = $e->getMessage();
             }
         }
 
-        $villes = $this->villeModel->getAll();
-        $besoinsRestants = $this->achatModel->getBesoinsRestants();
-        $tauxFrais = $this->configModel->getFraisAchatPourcent();
+        // Récupérer les éléments (sans argent, on n'achète pas de l'argent)
+        $elements = $this->elementModel->getAllSansArgent();
+        $panierAchats = $_SESSION['panier_achats'] ?? [];
+
+        // Total du panier
+        $totalPanier = array_sum(array_column($panierAchats, 'montant'));
 
         $this->app->render('achat/saisie', [
-            'villes' => $villes,
-            'besoinsRestants' => $besoinsRestants,
-            'tauxFrais' => $tauxFrais,
-            'success' => $success,
-            'error' => $error,
-            'form' => $_POST ?? []
+            'elements'          => $elements,
+            'argentDisponible'  => $argentDisponible,
+            'panierAchats'      => $panierAchats,
+            'totalPanier'       => $totalPanier,
+            'success'           => $success,
+            'error'             => $error,
+            'form'              => $_POST ?? []
         ]);
     }
 
     /**
-     * Liste des achats (filtrable par ville)
+     * Supprime un achat du panier
      */
-    public function liste(?int $villeId = null): void
-    {
-        $villes = $this->villeModel->getAll();
-        
-        if ($villeId) {
-            $achats = $this->achatModel->getByVille($villeId);
-            $villeSelectionnee = $this->villeModel->getById($villeId);
-            $totaux = $this->achatModel->getTotalAchatsByVille($villeId);
-        } else {
-            $achats = $this->achatModel->getAll();
-            $villeSelectionnee = null;
-            $totaux = $this->achatModel->getTotalAchats();
-        }
-
-        $tauxFrais = $this->configModel->getFraisAchatPourcent();
-
-        $this->app->render('achat/liste', [
-            'achats' => $achats,
-            'villes' => $villes,
-            'villeId' => $villeId,
-            'villeSelectionnee' => $villeSelectionnee,
-            'totaux' => $totaux,
-            'tauxFrais' => $tauxFrais
-        ]);
-    }
-
-    /**
-     * Met à jour le taux de frais
-     */
-    public function updateTaux(): void
+    public function supprimerDuPanier(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        $taux = (float)($_POST['taux'] ?? 10);
+        $index = (int)($_POST['index'] ?? -1);
 
-        if ($taux < 0 || $taux > 100) {
-            $_SESSION['achat_error'] = 'Le taux doit être entre 0% et 100%.';
-        } else {
-            $this->configModel->setFraisAchatPourcent($taux);
-            $_SESSION['achat_success'] = 'Taux de frais mis à jour à ' . $taux . '%.';
+        if (isset($_SESSION['panier_achats'][$index])) {
+            array_splice($_SESSION['panier_achats'], $index, 1);
         }
 
         $this->app->redirect('/achat/saisie');
     }
 
     /**
-     * API : Récupère les besoins restants (pour AJAX)
+     * Vide le panier
      */
-    public function apiBesoinsRestants(?int $villeId = null): void
+    public function viderPanier(): void
     {
-        header('Content-Type: application/json');
-
-        if ($villeId) {
-            $besoins = $this->achatModel->getBesoinsRestantsByVille($villeId);
-        } else {
-            $besoins = $this->achatModel->getBesoinsRestants();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
-        echo json_encode([
-            'success' => true,
-            'data' => $besoins,
-            'tauxFrais' => $this->configModel->getFraisAchatPourcent()
+        $_SESSION['panier_achats'] = [];
+        $this->app->redirect('/achat/saisie');
+    }
+
+    /**
+     * Valide les achats du panier et les ajoute au stock
+     */
+    public function validerAchats(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $panierAchats = $_SESSION['panier_achats'] ?? [];
+
+        if (empty($panierAchats)) {
+            $_SESSION['achat_error'] = 'Le panier est vide.';
+            $this->app->redirect('/achat/saisie');
+            return;
+        }
+
+        $totalPanier = array_sum(array_column($panierAchats, 'montant'));
+        $argentDisponible = $this->stockModel->getArgentDisponible();
+
+        if ($totalPanier > $argentDisponible) {
+            $_SESSION['achat_error'] = "Fonds insuffisants. Disponible: " . number_format($argentDisponible, 2) . " Ar";
+            $this->app->redirect('/achat/saisie');
+            return;
+        }
+
+        try {
+            $nbAjoutes = 0;
+
+            foreach ($panierAchats as $achat) {
+                $this->achatModel->insert(
+                    (int)$achat['id_element'],
+                    (int)$achat['quantite'],
+                    (float)$achat['prix_unitaire'],
+                    $achat['date']
+                );
+                $nbAjoutes++;
+            }
+
+            // Vider le panier
+            $_SESSION['panier_achats'] = [];
+
+            $_SESSION['achat_success'] = $nbAjoutes . ' achat(s) enregistré(s) au stock ! Montant total: ' . number_format($totalPanier, 2) . ' Ar';
+        } catch (\Exception $e) {
+            $_SESSION['achat_error'] = 'Erreur: ' . $e->getMessage();
+        }
+
+        $this->app->redirect('/achat/saisie');
+    }
+
+    /**
+     * Liste des achats
+     */
+    public function liste(): void
+    {
+        $achats = $this->achatModel->getAll();
+        $totaux = $this->achatModel->getTotal();
+        $argentDisponible = $this->stockModel->getArgentDisponible();
+
+        $this->app->render('achat/liste', [
+            'achats'            => $achats,
+            'totaux'            => $totaux,
+            'argentDisponible'  => $argentDisponible
         ]);
     }
 }

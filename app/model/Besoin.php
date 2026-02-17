@@ -95,4 +95,65 @@ class Besoin
             ORDER BY montant_total DESC
         ");
     }
+
+    /**
+     * Récupère les besoins non satisfaits groupés par ville
+     */
+    public function getBesoinsParVille(): array
+    {
+        return $this->db->fetchAll("
+            SELECT 
+                v.id AS ville_id,
+                v.libele AS ville_libele,
+                COUNT(b.id) AS nb_besoins,
+                SUM(b.quantite) AS quantite_totale,
+                SUM(b.quantite * e.pu) AS montant_total,
+                COALESCE((
+                    SELECT SUM(d.quantite)
+                    FROM bn_distribution d
+                    WHERE d.idVille = v.id
+                ), 0) AS deja_recu
+            FROM bn_ville v
+            LEFT JOIN bn_besoin b ON v.id = b.idVille AND (b.satisfait = 0 OR b.satisfait IS NULL)
+            LEFT JOIN bn_element e ON b.idelement = e.id
+            GROUP BY v.id, v.libele
+            HAVING nb_besoins > 0
+            ORDER BY v.libele
+        ");
+    }
+
+    /**
+     * Marque un besoin comme satisfait
+     */
+    public function marquerSatisfait(int $id): bool
+    {
+        $stmt = $this->db->runQuery("UPDATE bn_besoin SET satisfait = 1 WHERE id = ?", [$id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Récupère les besoins non satisfaits
+     */
+    public function getNonSatisfaits(): array
+    {
+        return $this->db->fetchAll("
+            SELECT b.*, 
+                   e.libele AS element_libele, 
+                   e.pu AS element_pu, 
+                   v.libele AS ville_libele,
+                   tb.libele AS type_besoin,
+                   (b.quantite * e.pu) AS montant_total,
+                   COALESCE((
+                       SELECT SUM(d.quantite)
+                       FROM bn_distribution d
+                       WHERE d.idVille = b.idVille AND d.idelement = b.idelement
+                   ), 0) AS deja_recu
+            FROM bn_besoin b
+            JOIN bn_element e ON b.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            JOIN bn_ville v ON b.idVille = v.id
+            WHERE b.satisfait = 0 OR b.satisfait IS NULL
+            ORDER BY b.date ASC, b.id ASC
+        ");
+    }
 }
