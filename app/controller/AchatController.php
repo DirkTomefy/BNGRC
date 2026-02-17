@@ -68,11 +68,19 @@ class AchatController
                     throw new \Exception('Le prix unitaire doit être supérieur à 0');
                 }
 
-                $montantTotal = $quantite * $prixUnitaire;
+                $tauxFrais = (float)($_POST['taux_frais'] ?? 10.0);
+
+                if ($tauxFrais < 0 || $tauxFrais > 100) {
+                    throw new \Exception('Le taux de frais doit être entre 0 et 100%');
+                }
+
+                $montantHT = $quantite * $prixUnitaire;
+                $montantFrais = $montantHT * ($tauxFrais / 100);
+                $montantTTC = $montantHT + $montantFrais;
 
                 // Vérifier si on a assez d'argent
-                if ($montantTotal > $argentDisponible) {
-                    throw new \Exception("Fonds insuffisants. Disponible: " . number_format($argentDisponible, 2) . " Ar, Requis: " . number_format($montantTotal, 2) . " Ar");
+                if ($montantTTC > $argentDisponible) {
+                    throw new \Exception("Fonds insuffisants. Disponible: " . number_format($argentDisponible, 2) . " Ar, Requis (TTC): " . number_format($montantTTC, 2) . " Ar");
                 }
 
                 // Récupérer les infos de l'élément
@@ -92,7 +100,9 @@ class AchatController
                     'type_besoin'       => $elementInfo['type_besoin_libele'] ?? '',
                     'quantite'          => $quantite,
                     'prix_unitaire'     => $prixUnitaire,
-                    'montant'           => $montantTotal,
+                    'taux_frais'        => $tauxFrais,
+                    'montant'           => $montantHT,
+                    'montant_ttc'       => $montantTTC,
                     'date'              => $date,
                 ];
 
@@ -107,8 +117,12 @@ class AchatController
         $elements = $this->elementModel->getAllSansArgent();
         $panierAchats = $_SESSION['panier_achats'] ?? [];
 
-        // Total du panier
-        $totalPanier = array_sum(array_column($panierAchats, 'montant'));
+        // Total du panier (TTC)
+        $totalPanier = array_sum(array_column($panierAchats, 'montant_ttc'));
+        // Fallback pour les anciens paniers sans montant_ttc
+        if ($totalPanier == 0 && !empty($panierAchats)) {
+            $totalPanier = array_sum(array_column($panierAchats, 'montant'));
+        }
 
         $this->app->render('achat/saisie', [
             'elements'          => $elements,
@@ -170,11 +184,10 @@ class AchatController
             return;
         }
 
-        // Calculer le total TTC (avec frais 10%)
-        $tauxFrais = 10.0;
+        // Calculer le total TTC avec le taux de frais de chaque article
+        $totalTTC = array_sum(array_column($panierAchats, 'montant_ttc'));
         $totalHT = array_sum(array_column($panierAchats, 'montant'));
-        $totalFrais = $totalHT * ($tauxFrais / 100);
-        $totalTTC = $totalHT + $totalFrais;
+        $totalFrais = $totalTTC - $totalHT;
         
         $argentDisponible = $this->stockModel->getArgentDisponible();
 
@@ -192,7 +205,7 @@ class AchatController
                     (int)$achat['id_element'],
                     (int)$achat['quantite'],
                     (float)$achat['prix_unitaire'],
-                    $tauxFrais, // taux de frais
+                    (float)$achat['taux_frais'],
                     $achat['date'],
                     '' // description
                 );

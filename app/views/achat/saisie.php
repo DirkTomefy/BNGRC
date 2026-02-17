@@ -122,13 +122,23 @@ include __DIR__ . '/../layouts/header.php';
                                                min="1" placeholder="Entrez la quantité..." required>
                                     </div>
 
-                                    <!-- Prix unitaire -->
+                                    <!-- Prix unitaire (automatique depuis l'élément) -->
                                     <div class="mb-3">
                                         <label for="prix_unitaire" class="form-label fw-bold">
                                             <i class="bi bi-currency-exchange text-primary me-1"></i>Prix unitaire (Ar)
                                         </label>
-                                        <input type="number" step="0.01" class="form-control" id="prix_unitaire" name="prix_unitaire" 
-                                               min="0.01" placeholder="Prix d'achat unitaire..." required>
+                                        <input type="number" step="0.01" class="form-control bg-light" id="prix_unitaire" name="prix_unitaire" 
+                                               min="0.01" readonly required>
+                                    </div>
+
+                                    <!-- Taux de frais -->
+                                    <div class="mb-3">
+                                        <label for="taux_frais" class="form-label fw-bold">
+                                            <i class="bi bi-percent text-primary me-1"></i>Taux de frais (%)
+                                        </label>
+                                        <input type="number" step="0.01" class="form-control" id="taux_frais" name="taux_frais" 
+                                               min="0" max="100" value="10" placeholder="10" required>
+                                        <div class="form-text">Frais appliqués sur le montant HT (par défaut 10%)</div>
                                     </div>
 
                                     <!-- Date -->
@@ -144,11 +154,21 @@ include __DIR__ . '/../layouts/header.php';
                                     <div class="card bg-light mb-3">
                                         <div class="card-body py-2">
                                             <h6 class="card-title mb-2">
-                                                <i class="bi bi-calculator me-1"></i>Montant total
+                                                <i class="bi bi-calculator me-1"></i>Aperçu du coût
                                             </h6>
-                                            <div class="text-center">
-                                                <span class="fs-4 fw-bold text-primary" id="montantTotal">0</span>
-                                                <span class="text-muted">Ar</span>
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <small class="text-muted">Montant HT</small><br>
+                                                    <span class="fw-bold" id="montantHT">0</span> <small>Ar</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <small class="text-muted">Frais</small><br>
+                                                    <span class="fw-bold text-warning" id="montantFrais">0</span> <small>Ar</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <small class="text-muted">Total TTC</small><br>
+                                                    <span class="fs-5 fw-bold text-primary" id="montantTotal">0</span> <small>Ar</small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -199,7 +219,8 @@ include __DIR__ . '/../layouts/header.php';
                                                     <th>Élément</th>
                                                     <th class="text-end">Qté</th>
                                                     <th class="text-end">P.U.</th>
-                                                    <th class="text-end">Montant</th>
+                                                    <th class="text-end">Frais</th>
+                                                    <th class="text-end">TTC</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
@@ -213,7 +234,8 @@ include __DIR__ . '/../layouts/header.php';
                                                     </td>
                                                     <td class="text-end"><?= number_format($item['quantite'], 0, ',', ' ') ?></td>
                                                     <td class="text-end"><?= number_format($item['prix_unitaire'], 0, ',', ' ') ?></td>
-                                                    <td class="text-end fw-bold"><?= number_format($item['montant'], 0, ',', ' ') ?></td>
+                                                    <td class="text-end"><small class="text-muted"><?= number_format($item['taux_frais'] ?? 10, 1) ?>%</small></td>
+                                                    <td class="text-end fw-bold"><?= number_format($item['montant_ttc'] ?? $item['montant'], 0, ',', ' ') ?></td>
                                                     <td class="text-center">
                                                         <form method="POST" action="<?= $baseUrl ?>/achat/supprimer" class="d-inline">
                                                             <input type="hidden" name="index" value="<?= $index ?>">
@@ -227,7 +249,7 @@ include __DIR__ . '/../layouts/header.php';
                                             </tbody>
                                             <tfoot class="table-dark">
                                                 <tr>
-                                                    <td colspan="4" class="text-end fw-bold">TOTAL</td>
+                                                    <td colspan="5" class="text-end fw-bold">TOTAL TTC</td>
                                                     <td class="text-end fw-bold"><?= number_format($totalPanier, 0, ',', ' ') ?> Ar</td>
                                                     <td></td>
                                                 </tr>
@@ -281,7 +303,10 @@ include __DIR__ . '/../layouts/header.php';
         const selectElement = document.getElementById('element');
         const inputQuantite = document.getElementById('quantite');
         const inputPrix = document.getElementById('prix_unitaire');
+        const inputTaux = document.getElementById('taux_frais');
         const elementInfo = document.getElementById('elementInfo');
+        const montantHT = document.getElementById('montantHT');
+        const montantFrais = document.getElementById('montantFrais');
         const montantTotal = document.getElementById('montantTotal');
 
         function updateInfo() {
@@ -294,10 +319,8 @@ include __DIR__ . '/../layouts/header.php';
                 document.getElementById('infoPu').textContent = pu.toLocaleString('fr-FR');
                 elementInfo.classList.remove('d-none');
                 
-                // Pré-remplir le prix si vide
-                if (!inputPrix.value) {
-                    inputPrix.value = pu;
-                }
+                // Toujours mettre le prix unitaire depuis l'élément
+                inputPrix.value = pu;
             } else {
                 elementInfo.classList.add('d-none');
             }
@@ -307,13 +330,19 @@ include __DIR__ . '/../layouts/header.php';
         function updateMontant() {
             const qte = parseInt(inputQuantite.value) || 0;
             const prix = parseFloat(inputPrix.value) || 0;
-            const total = qte * prix;
-            montantTotal.textContent = total.toLocaleString('fr-FR');
+            const taux = parseFloat(inputTaux.value) || 0;
+            const ht = qte * prix;
+            const frais = ht * (taux / 100);
+            const ttc = ht + frais;
+            montantHT.textContent = ht.toLocaleString('fr-FR');
+            montantFrais.textContent = frais.toLocaleString('fr-FR');
+            montantTotal.textContent = ttc.toLocaleString('fr-FR');
         }
 
         selectElement.addEventListener('change', updateInfo);
         inputQuantite.addEventListener('input', updateMontant);
         inputPrix.addEventListener('input', updateMontant);
+        inputTaux.addEventListener('input', updateMontant);
     });
     </script>
 
