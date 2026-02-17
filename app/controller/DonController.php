@@ -298,21 +298,17 @@ class DonController
 
             foreach ($resultatSimulation['distributions'] as $distribution) {
                 // Créer l'enregistrement de distribution
+                // source = 'don' car les distributions proviennent du stock (dons + achats)
                 $this->distributionModel->insert(
                     (int)$distribution['idVille'],
                     (int)$distribution['idElement'],
                     (int)$distribution['quantite'],
-                    'simulation',
-                    (int)$distribution['besoin_id']
+                    'don',
+                    null
                 );
 
                 $nbDistribues++;
                 $totalQuantite += (int)$distribution['quantite'];
-
-                // Marquer le besoin comme satisfait si entièrement couvert
-                if (!empty($distribution['besoin_satisfait'])) {
-                    $this->besoinModel->marquerSatisfait((int)$distribution['besoin_id']);
-                }
             }
 
             // Vider la simulation
@@ -322,6 +318,22 @@ class DonController
         } catch (\Exception $e) {
             $_SESSION['simulation_error'] = 'Erreur lors de la distribution : ' . $e->getMessage();
         }
+
+        $this->app->redirect('/don/simulation');
+    }
+
+    /**
+     * Annuler la simulation en cours
+     */
+    public function annulerSimulation(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Vider la simulation
+        $_SESSION['resultat_simulation'] = null;
+        $_SESSION['simulation_success'] = 'Simulation annulée.';
 
         $this->app->redirect('/don/simulation');
     }
@@ -352,11 +364,12 @@ class DonController
 
     /**
      * Récupère les besoins non satisfaits pour un élément donné, triés FIFO (date ASC, id ASC)
+     * Un besoin est non satisfait si la quantité distribuée < quantité demandée
      */
     private function getBesoinsNonSatisfaits(int $idElement, string $ordre = 'fifo'): array
     {
         $orderBy = match ($ordre) {
-            'plus_petit_besoin' => 'ORDER BY (b.quantite - COALESCE((SELECT SUM(d.quantite) FROM bn_distribution d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0)) ASC, b.id ASC',
+            'plus_petit_besoin' => 'ORDER BY reste ASC, b.id ASC',
             default => 'ORDER BY b.date ASC, b.id ASC',
         };
 
@@ -367,11 +380,16 @@ class DonController
                        SELECT SUM(d.quantite) 
                        FROM bn_distribution d 
                        WHERE d.idVille = b.idVille AND d.idelement = b.idelement
-                   ), 0) AS deja_recu
+                   ), 0) AS deja_recu,
+                   (b.quantite - COALESCE((
+                       SELECT SUM(d.quantite) 
+                       FROM bn_distribution d 
+                       WHERE d.idVille = b.idVille AND d.idelement = b.idelement
+                   ), 0)) AS reste
             FROM bn_besoin b
             LEFT JOIN bn_ville v ON b.idVille = v.id
             WHERE b.idelement = ?
-              AND (b.satisfait = 0 OR b.satisfait IS NULL)
+            HAVING reste > 0
             $orderBy
         ", [$idElement]);
     }

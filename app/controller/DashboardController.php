@@ -5,6 +5,7 @@ namespace app\controller;
 use app\model\Stock;
 use app\model\Distribution;
 use app\model\Besoin;
+use app\model\Recap;
 use app\model\VueVilleRecap;
 use flight\Engine;
 
@@ -14,6 +15,7 @@ class DashboardController
     private Stock $stockModel;
     private Distribution $distributionModel;
     private Besoin $besoinModel;
+    private Recap $recapModel;
     private VueVilleRecap $vueVilleRecap;
 
     public function __construct(Engine $app)
@@ -22,6 +24,7 @@ class DashboardController
         $this->stockModel = new Stock($app->db());
         $this->distributionModel = new Distribution($app->db());
         $this->besoinModel = new Besoin($app->db());
+        $this->recapModel = new Recap($app->db());
         $this->vueVilleRecap = new VueVilleRecap($app->db());
     }
 
@@ -55,6 +58,9 @@ class DashboardController
         
         // Statistiques globales
         $statsGlobales = $this->vueVilleRecap->getStatsGlobales();
+        
+        // Récap par ville (besoins, distributions, manque)
+        $recapParVille = $this->recapModel->getRecapParVille();
 
         $this->app->render('dashboard/dashboard', [
             'recapGlobal'               => $recapGlobal,
@@ -66,6 +72,7 @@ class DashboardController
             'dernieresDistributions'    => $dernieresDistributions,
             'donneesParVille'           => $donneesParVille,
             'statsGlobales'             => $statsGlobales,
+            'recapParVille'             => $recapParVille,
         ]);
     }
 

@@ -1,9 +1,6 @@
 <?php
 
 $achats = $achats ?? [];
-$villes = $villes ?? [];
-$villeId = $villeId ?? null;
-$villeSelectionnee = $villeSelectionnee ?? null;
 $totaux = $totaux ?? [];
 $tauxFrais = $tauxFrais ?? 10;
 
@@ -21,10 +18,7 @@ include __DIR__ . '/../layouts/header.php';
                     <i class="bi bi-bag-fill text-primary"></i> Liste des achats
                 </h1>
                 <p class="lead text-secondary">
-                    Historique des achats effectués 
-                    <?php if ($villeSelectionnee): ?>
-                        — <strong><?= htmlspecialchars($villeSelectionnee['libele']) ?></strong>
-                    <?php endif; ?>
+                    Historique des achats effectués (stock global)
                 </p>
             </div>
         </div>
@@ -34,29 +28,22 @@ include __DIR__ . '/../layouts/header.php';
         <div class="row justify-content-center">
             <div class="col-lg-12">
 
-                <!-- Filtre et boutons -->
+                <!-- Actions -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">
-                                    <i class="bi bi-funnel me-1"></i>Filtrer par ville
-                                </label>
-                                <select class="form-select" id="filtreVille" onchange="window.location.href = this.value ? '<?= htmlspecialchars($toUrl('/achat/liste/')) ?>' + this.value : '<?= htmlspecialchars($toUrl('/achat/liste')) ?>'">
-                                    <option value="">Toutes les villes</option>
-                                    <?php foreach ($villes as $ville): ?>
-                                        <option value="<?= $ville['id'] ?>" <?= $villeId == $ville['id'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($ville['libele']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                            <div class="col-md-6">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Les achats alimentent le <strong>stock global</strong> et sont financés par les dons de type <strong>Argent</strong>.
+                                </div>
                             </div>
-                            <div class="col-md-4 text-center">
+                            <div class="col-md-3 text-center">
                                 <div class="badge bg-primary fs-6 p-2">
                                     <i class="bi bi-percent me-1"></i>Taux de frais: <?= $tauxFrais ?>%
                                 </div>
                             </div>
-                            <div class="col-md-4 text-end">
+                            <div class="col-md-3 text-end">
                                 <a href="<?= htmlspecialchars($toUrl('/achat/saisie')) ?>" class="btn btn-success">
                                     <i class="bi bi-plus-circle me-2"></i>Nouvel achat
                                 </a>
@@ -129,7 +116,6 @@ include __DIR__ . '/../layouts/header.php';
                                         <tr>
                                             <th>#</th>
                                             <th>Date</th>
-                                            <th>Ville</th>
                                             <th>Élément</th>
                                             <th>Type</th>
                                             <th class="text-end">Qté</th>
@@ -146,31 +132,28 @@ include __DIR__ . '/../layouts/header.php';
                                                 <td>
                                                     <small><?= date('d/m/Y H:i', strtotime($achat['date'])) ?></small>
                                                 </td>
+                                                <td class="fw-bold"><?= htmlspecialchars($achat['element_libele'] ?? '') ?></td>
                                                 <td>
-                                                    <span class="badge bg-secondary"><?= htmlspecialchars($achat['ville_libele']) ?></span>
-                                                </td>
-                                                <td class="fw-bold"><?= htmlspecialchars($achat['element_libele']) ?></td>
-                                                <td>
-                                                    <span class="badge <?= $achat['type_besoin'] === 'Nature' ? 'bg-success' : 'bg-info' ?>">
-                                                        <?= htmlspecialchars($achat['type_besoin']) ?>
+                                                    <span class="badge <?= ($achat['type_besoin'] ?? '') === 'Nature' ? 'bg-success' : 'bg-info' ?>">
+                                                        <?= htmlspecialchars($achat['type_besoin'] ?? '') ?>
                                                     </span>
                                                 </td>
-                                                <td class="text-end"><?= number_format($achat['quantite'], 0, ',', ' ') ?></td>
-                                                <td class="text-end"><?= number_format($achat['prixUnitaire'], 0, ',', ' ') ?> Ar</td>
-                                                <td class="text-end"><?= number_format($achat['montantHT'], 0, ',', ' ') ?> Ar</td>
+                                                <td class="text-end"><?= number_format($achat['quantite'] ?? 0, 0, ',', ' ') ?></td>
+                                                <td class="text-end"><?= number_format($achat['prixUnitaire'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                                <td class="text-end"><?= number_format($achat['montantHT'] ?? 0, 0, ',', ' ') ?> Ar</td>
                                                 <td class="text-end text-warning">
-                                                    +<?= number_format($achat['montantFrais'], 0, ',', ' ') ?> Ar
-                                                    <small class="text-muted">(<?= $achat['tauxFrais'] ?>%)</small>
+                                                    +<?= number_format($achat['montantFrais'] ?? 0, 0, ',', ' ') ?> Ar
+                                                    <small class="text-muted">(<?= $achat['tauxFrais'] ?? 0 ?>%)</small>
                                                 </td>
                                                 <td class="text-end fw-bold text-success">
-                                                    <?= number_format($achat['montantTTC'], 0, ',', ' ') ?> Ar
+                                                    <?= number_format($achat['montantTTC'] ?? 0, 0, ',', ' ') ?> Ar
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                     <tfoot class="table-dark">
                                         <tr>
-                                            <td colspan="5" class="text-end fw-bold">TOTAUX</td>
+                                            <td colspan="4" class="text-end fw-bold">TOTAUX</td>
                                             <td class="text-end fw-bold"><?= number_format($totaux['quantite_totale'] ?? 0, 0, ',', ' ') ?></td>
                                             <td></td>
                                             <td class="text-end fw-bold"><?= number_format($totaux['montant_ht_total'] ?? 0, 0, ',', ' ') ?> Ar</td>

@@ -360,9 +360,11 @@ include __DIR__ . '/../layouts/header.php';
                                 <i class="bi bi-check-circle me-2"></i>Valider et distribuer
                             </button>
                         </form>
-                        <a href="<?= $baseUrl ?>/don/simulation" class="btn btn-outline-secondary btn-lg">
-                            <i class="bi bi-x-circle me-2"></i>Annuler
-                        </a>
+                        <form method="POST" action="<?= $baseUrl ?>/don/annuler-simulation" class="d-inline">
+                            <button type="submit" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>Annuler
+                            </button>
+                        </form>
                     </div>
                 <?php endif; ?>
 

@@ -93,11 +93,13 @@ class Stock
     }
 
     /**
-     * Récupère le récap global (besoins vs stock)
+     * Récupère le récap global (besoins vs stock) - retourne une seule ligne
      */
-    public function getRecapGlobal(): array
+    public function getRecapGlobal(): ?array
     {
-        return $this->db->fetchAll("SELECT * FROM vue_recap_global ORDER BY type_besoin, element");
+        $row = $this->db->fetchRow("SELECT * FROM vue_recap_global");
+        $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
+        return empty($data) ? null : $data;
     }
 
     /**
