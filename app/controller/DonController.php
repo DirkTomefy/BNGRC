@@ -559,13 +559,48 @@ class DonController
 
             $quantiteDistribuee = 0;
 
-            foreach ($besoinsAvecRestant as $besoin) {
-                // Part proportionnelle arrondie vers le bas
+            $allocations = [];
+            foreach ($besoinsAvecRestant as $index => $besoin) {
                 $proportion = $besoin['besoin_restant'] / $totalBesoinRestant;
-                $quantiteProportionnelle = (int)floor($quantiteStock * $proportion);
+                $quantiteExacte = $quantiteStock * $proportion;
+                $quantiteFloor = (int)floor($quantiteExacte);
+                $partieDecimale = $quantiteExacte - $quantiteFloor;
 
-                // Ne pas dépasser le besoin restant
-                $quantiteADonner = min($quantiteProportionnelle, $besoin['besoin_restant']);
+                $quantiteFloor = min($quantiteFloor, $besoin['besoin_restant']);
+
+                $allocations[] = [
+                    'index'             => $index,
+                    'besoin'            => $besoin,
+                    'quantite'          => $quantiteFloor,
+                    'partie_decimale'   => $partieDecimale,
+                ];
+                $quantiteDistribuee += $quantiteFloor;
+            }
+
+            // Étape 2 : Répartir le reste (1 unité par besoin, par ordre décroissant des décimales)
+            $reste = $quantiteStock - $quantiteDistribuee;
+            if ($reste > 0) {
+                // Trier par partie décimale décroissante
+                usort($allocations, function ($a, $b) {
+                    return $b['partie_decimale'] <=> $a['partie_decimale'];
+                });
+
+                foreach ($allocations as &$alloc) {
+                    if ($reste <= 0) break;
+                    // Ne pas dépasser le besoin restant
+                    if ($alloc['quantite'] < $alloc['besoin']['besoin_restant']) {
+                        $alloc['quantite']++;
+                        $quantiteDistribuee++;
+                        $reste--;
+                    }
+                }
+                unset($alloc);
+            }
+
+            // Étape 3 : Créer les distributions
+            foreach ($allocations as $alloc) {
+                $quantiteADonner = $alloc['quantite'];
+                $besoin = $alloc['besoin'];
 
                 if ($quantiteADonner <= 0) {
                     continue;
@@ -585,7 +620,6 @@ class DonController
                 ];
 
                 $distributions[] = $distribution;
-                $quantiteDistribuee += $quantiteADonner;
 
                 // Regrouper par ville
                 $villeId = (int)$besoin['idVille'];
@@ -602,13 +636,13 @@ class DonController
                 $parVille[$villeId]['total_montant'] += $distribution['montant'];
             }
 
-            // Stock non distribué (reste après arrondis vers le bas)
+            // Stock excédentaire (si stock > total des besoins)
             $quantiteRestante = $quantiteStock - $quantiteDistribuee;
             if ($quantiteRestante > 0) {
                 $nonDistribues[] = [
                     'element_libele' => $stock['element_libele'],
                     'quantite' => $quantiteRestante,
-                    'raison' => 'Reste après distribution proportionnelle (arrondis)'
+                    'raison' => 'Stock excédentaire (pas assez de besoins)'
                 ];
             }
         }
