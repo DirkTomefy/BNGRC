@@ -216,16 +216,17 @@ SELECT
 -- =====================================================
 -- Régions
 INSERT INTO bn_region (libele) VALUES
- ('Centre'),
+ ('Est'),
  ('Nord'),
- ('Sud');
+ ('Ouest');
 
 -- Villes
 INSERT INTO bn_ville (idRegion, libele) VALUES
- ((SELECT id FROM bn_region WHERE libele = 'Centre'), 'Antananarivo'),
- ((SELECT id FROM bn_region WHERE libele = 'Centre'), 'Antsirabe'),
- ((SELECT id FROM bn_region WHERE libele = 'Nord'), 'Antsiranana'),
- ((SELECT id FROM bn_region WHERE libele = 'Sud'), 'Toliara');
+ ((SELECT id FROM bn_region WHERE libele = 'Est'), 'Toamasina'),
+ ((SELECT id FROM bn_region WHERE libele = 'Est'), 'Mananjary'),
+ ((SELECT id FROM bn_region WHERE libele = 'Est'), 'Farafangana'),
+ ((SELECT id FROM bn_region WHERE libele = 'Nord'), 'Nosy Be'),
+ ((SELECT id FROM bn_region WHERE libele = 'Ouest'), 'Morondava');
 
 -- Types de besoins
 INSERT INTO bn_typeBesoin (libele) VALUES
@@ -235,26 +236,52 @@ INSERT INTO bn_typeBesoin (libele) VALUES
 
 -- Éléments
 INSERT INTO bn_element (libele, idtypebesoin, pu) VALUES
- ('Riz (kg)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 2500.00),
- ('Huile (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 5000.00),
- ('Savon (unité)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 1500.00),
- ('Gants médicaux (paire)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 2000.00),
- ('Carburant (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 6000.00);
+ ('Riz (kg)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 3000.00),
+ ('Eau (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 1000.00),
+ ('Huile (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 6000.00),
+ ('Haricots', (SELECT id FROM bn_typeBesoin WHERE libele = 'Nature'), 4000.00),
+ ('Tôle', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 25000.00),
+ ('Bâche', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 15000.00),
+ ('Clous (kg)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 8000.00),
+ ('Bois', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 10000.00),
+ ('groupe', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 6750000.00),
+ ('Argent', (SELECT id FROM bn_typeBesoin WHERE libele = 'Argent'), 1.00);
 
 -- Besoins
 INSERT INTO bn_besoin (idelement, quantite, idVille, `date`) VALUES
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 300, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antananarivo'), '2026-02-10 09:30:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Huile (L)'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antsirabe'), '2026-02-11 14:15:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Savon (unité)'), 500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antsiranana'), '2026-02-12 08:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Gants médicaux (paire)'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toliara'), '2026-02-13 16:45:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Carburant (L)'), 400, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antananarivo'), '2026-02-14 11:20:00');
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 800, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 12000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Huile (L)'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 80, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Clous (kg)'), 60, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 6000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 600, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 150, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bois'), 100, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 8000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 300, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Haricots'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 40, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Clous (kg)'), 30, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 4000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 700, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 180, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bois'), 150, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-15 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 10000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
+ ((SELECT e.id FROM bn_element e WHERE e.libele = 'groupe'), 3, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00');
 
 -- Dons (stock global : pas de ville)
 INSERT INTO bn_don (`date`, idelement, description, quantite) VALUES
- ('2026-02-10 10:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 'Don de riz pour les ménages vulnérables', 200),
- ('2026-02-11 15:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Huile (L)'), 'Don d''huile de cuisine', 80),
- ('2026-02-12 09:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Savon (unité)'), 'Lot de savon', 300),
- ('2026-02-13 17:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Gants médicaux (paire)'), 'Gants médicaux pour le centre de santé', 150);
+ ('2026-02-15 08:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 'Don de riz', 200),
+ ('2026-02-15 10:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 'Don d''eau', 500),
+ ('2026-02-15 14:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 'Don de bâches', 50),
+ ('2026-02-15 16:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 'Don en argent', 2000000);
 
 -- =====================================================
 -- 4. RESET (snapshot + procédures)

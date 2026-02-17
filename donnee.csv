@@ -1,0 +1,27 @@
+ville,date,id,categorie,libelle,prix_unitaire,quantite
+Toamasina,2026-02-16,17,nature,Riz (kg),3000,800
+Toamasina,2026-02-15,4,nature,Eau (L),1000,1500
+Toamasina,2026-02-16,23,materiel,Tôle,25000,120
+Toamasina,2026-02-15,1,materiel,Bâche,15000,200
+Toamasina,2026-02-16,12,argent,Argent,1,12000000
+Mananjary,2026-02-15,9,nature,Riz (kg),3000,500
+Mananjary,2026-02-16,25,nature,Huile (L),6000,120
+Mananjary,2026-02-15,6,materiel,Tôle,25000,80
+Mananjary,2026-02-16,19,materiel,Clous (kg),8000,60
+Mananjary,2026-02-15,3,argent,Argent,1,6000000
+Farafangana,2026-02-16,21,nature,Riz (kg),3000,600
+Farafangana,2026-02-15,14,nature,Eau (L),1000,1000
+Farafangana,2026-02-16,8,materiel,Bâche,15000,150
+Farafangana,2026-02-15,26,materiel,Bois,10000,100
+Farafangana,2026-02-16,10,argent,Argent,1,8000000
+Nosy Be,2026-02-15,5,nature,Riz (kg),3000,300
+Nosy Be,2026-02-16,18,nature,Haricots,4000,200
+Nosy Be,2026-02-15,2,materiel,Tôle,25000,40
+Nosy Be,2026-02-16,24,materiel,Clous (kg),8000,30
+Nosy Be,2026-02-15,7,argent,Argent,1,4000000
+Morondava,2026-02-16,11,nature,Riz (kg),3000,700
+Morondava,2026-02-15,20,nature,Eau (L),1000,1200
+Morondava,2026-02-16,15,materiel,Bâche,15000,180
+Morondava,2026-02-15,22,materiel,Bois,10000,150
+Morondava,2026-02-16,13,argent,Argent,1,10000000
+Toamasina,2026-02-15,16,materiel,groupe,6750000,3
