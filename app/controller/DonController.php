@@ -234,9 +234,6 @@ class DonController
         ]);
     }
 
-    /**
-     * Simuler la distribution FIFO depuis le stock vers les villes
-     */
     public function simuler(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -252,8 +249,23 @@ class DonController
             return;
         }
 
+        $methode = $_POST['methode'] ?? 'fifo';
+
         try {
-            $resultat = $this->calculerDistributionFIFO();
+            switch ($methode) {
+                case 'plus_petit_besoin':
+                    $resultat = $this->calculerDistributionPlusPetitBesoin();
+                    break;
+                case 'proportionnelle':
+                    $resultat = $this->calculerDistributionProportionnelle();
+                    break;
+                case 'fifo':
+                default:
+                    $resultat = $this->calculerDistributionFIFO();
+                    $methode = 'fifo';
+                    break;
+            }
+            $resultat['methode'] = $methode;
             $_SESSION['resultat_simulation'] = $resultat;
             $_SESSION['simulation_success'] = 'Simulation effectuée ! Vérifiez le résultat ci-dessous puis validez pour distribuer.';
         } catch (\Exception $e) {
@@ -290,14 +302,17 @@ class DonController
                     (int)$distribution['idVille'],
                     (int)$distribution['idElement'],
                     (int)$distribution['quantite'],
-                    'don', // source = don
-                    null   // id_source optionnel
+                    'simulation',
+                    (int)$distribution['besoin_id']
                 );
 
                 $nbDistribues++;
                 $totalQuantite += (int)$distribution['quantite'];
-                // Note: Le besoin est automatiquement satisfait via la vue vue_besoins_ville
-                // quand quantite_recue >= quantite_demandee
+
+                // Marquer le besoin comme satisfait si entièrement couvert
+                if (!empty($distribution['besoin_satisfait'])) {
+                    $this->besoinModel->marquerSatisfait((int)$distribution['besoin_id']);
+                }
             }
 
             // Vider la simulation
@@ -336,40 +351,28 @@ class DonController
     }
 
     /**
-     * Annuler la simulation en cours
-     */
-    public function annulerSimulation(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $_SESSION['resultat_simulation'] = null;
-        $_SESSION['simulation_success'] = 'Simulation annulée.';
-
-        $this->app->redirect('/don/simulation');
-    }
-
-    /**
      * Récupère les besoins non satisfaits pour un élément donné, triés FIFO (date ASC, id ASC)
-     * Un besoin est non satisfait si quantite_besoin > quantite_distribuee
      */
-    private function getBesoinsNonSatisfaits(int $idElement): array
+    private function getBesoinsNonSatisfaits(int $idElement, string $ordre = 'fifo'): array
     {
+        $orderBy = match ($ordre) {
+            'plus_petit_besoin' => 'ORDER BY (b.quantite - COALESCE((SELECT SUM(d.quantite) FROM bn_distribution d WHERE d.idVille = b.idVille AND d.idelement = b.idelement), 0)) ASC, b.id ASC',
+            default => 'ORDER BY b.date ASC, b.id ASC',
+        };
+
         return $this->app->db()->fetchAll("
-            SELECT 
-                id_besoin AS id, 
-                idelement, 
-                quantite_demandee AS quantite, 
-                idVille, 
-                date_besoin AS date,
-                ville_libele,
-                quantite_recue AS deja_recu,
-                quantite_restante
-            FROM vue_besoins_ville
-            WHERE idelement = ?
-              AND quantite_restante > 0
-            ORDER BY date_besoin ASC, id_besoin ASC
+            SELECT b.id, b.idelement, b.quantite, b.idVille, b.date,
+                   v.libele AS ville_libele,
+                   COALESCE((
+                       SELECT SUM(d.quantite) 
+                       FROM bn_distribution d 
+                       WHERE d.idVille = b.idVille AND d.idelement = b.idelement
+                   ), 0) AS deja_recu
+            FROM bn_besoin b
+            LEFT JOIN bn_ville v ON b.idVille = v.id
+            WHERE b.idelement = ?
+              AND (b.satisfait = 0 OR b.satisfait IS NULL)
+            $orderBy
         ", [$idElement]);
     }
 
@@ -378,6 +381,23 @@ class DonController
      * Retourne un tableau avec les distributions prévues
      */
     private function calculerDistributionFIFO(): array
+    {
+        return $this->calculerDistributionParPriorite('fifo');
+    }
+
+    /**
+     * Calcule la distribution par priorité au plus petit besoin
+     * Les villes ayant les plus petits besoins restants sont servies en premier
+     */
+    private function calculerDistributionPlusPetitBesoin(): array
+    {
+        return $this->calculerDistributionParPriorite('plus_petit_besoin');
+    }
+
+    /**
+     * Calcule la distribution par priorité (FIFO ou plus petit besoin)
+     */
+    private function calculerDistributionParPriorite(string $ordre): array
     {
         $distributions = [];
         $nonDistribues = [];
@@ -391,8 +411,8 @@ class DonController
             $quantiteStock = (int)$stock['stock_disponible'];
             $quantiteRestante = $quantiteStock;
 
-            // Récupérer les besoins FIFO pour cet élément
-            $besoins = $this->getBesoinsNonSatisfaits($idElement);
+            // Récupérer les besoins pour cet élément selon l'ordre choisi
+            $besoins = $this->getBesoinsNonSatisfaits($idElement, $ordre);
 
             if (empty($besoins)) {
                 $nonDistribues[] = [
@@ -454,6 +474,123 @@ class DonController
                     'element_libele' => $stock['element_libele'],
                     'quantite' => $quantiteRestante,
                     'raison' => 'Stock excédentaire (pas assez de besoins)'
+                ];
+            }
+        }
+
+        return [
+            'distributions'         => $distributions,
+            'nonDistribues'         => $nonDistribues,
+            'parVille'              => $parVille,
+            'totalDistributions'    => count($distributions),
+            'totalQuantite'         => array_sum(array_column($distributions, 'quantite')),
+            'totalMontant'          => array_sum(array_column($distributions, 'montant'))
+        ];
+    }
+
+    /**
+     * Calcule la distribution proportionnelle depuis le stock vers les besoins
+     * Chaque ville reçoit une part proportionnelle à son besoin restant, arrondie vers le bas
+     */
+    private function calculerDistributionProportionnelle(): array
+    {
+        $distributions = [];
+        $nonDistribues = [];
+        $parVille = [];
+
+        // Récupérer le stock disponible
+        $stockDisponible = $this->stockModel->getStockDisponible();
+
+        foreach ($stockDisponible as $stock) {
+            $idElement = (int)$stock['idelement'];
+            $quantiteStock = (int)$stock['stock_disponible'];
+
+            // Récupérer tous les besoins pour cet élément
+            $besoins = $this->getBesoinsNonSatisfaits($idElement);
+
+            if (empty($besoins)) {
+                $nonDistribues[] = [
+                    'element_libele' => $stock['element_libele'],
+                    'quantite' => $quantiteStock,
+                    'raison' => 'Aucun besoin trouvé pour cet élément'
+                ];
+                continue;
+            }
+
+            // Calculer le besoin restant pour chaque besoin
+            $besoinsAvecRestant = [];
+            $totalBesoinRestant = 0;
+
+            foreach ($besoins as $besoin) {
+                $besoinRestant = (int)$besoin['quantite'] - (int)$besoin['deja_recu'];
+                if ($besoinRestant > 0) {
+                    $besoin['besoin_restant'] = $besoinRestant;
+                    $besoinsAvecRestant[] = $besoin;
+                    $totalBesoinRestant += $besoinRestant;
+                }
+            }
+
+            if (empty($besoinsAvecRestant) || $totalBesoinRestant <= 0) {
+                $nonDistribues[] = [
+                    'element_libele' => $stock['element_libele'],
+                    'quantite' => $quantiteStock,
+                    'raison' => 'Tous les besoins sont déjà satisfaits'
+                ];
+                continue;
+            }
+
+            $quantiteDistribuee = 0;
+
+            foreach ($besoinsAvecRestant as $besoin) {
+                // Part proportionnelle arrondie vers le bas
+                $proportion = $besoin['besoin_restant'] / $totalBesoinRestant;
+                $quantiteProportionnelle = (int)floor($quantiteStock * $proportion);
+
+                // Ne pas dépasser le besoin restant
+                $quantiteADonner = min($quantiteProportionnelle, $besoin['besoin_restant']);
+
+                if ($quantiteADonner <= 0) {
+                    continue;
+                }
+
+                $distribution = [
+                    'idVille'           => (int)$besoin['idVille'],
+                    'ville_libele'      => $besoin['ville_libele'],
+                    'idElement'         => $idElement,
+                    'element_libele'    => $stock['element_libele'],
+                    'type_besoin'       => $stock['type_besoin'],
+                    'quantite'          => $quantiteADonner,
+                    'prix_unitaire'     => (float)$stock['prix_unitaire'],
+                    'montant'           => $quantiteADonner * (float)$stock['prix_unitaire'],
+                    'besoin_id'         => (int)$besoin['id'],
+                    'besoin_satisfait'  => ($quantiteADonner >= $besoin['besoin_restant'])
+                ];
+
+                $distributions[] = $distribution;
+                $quantiteDistribuee += $quantiteADonner;
+
+                // Regrouper par ville
+                $villeId = (int)$besoin['idVille'];
+                if (!isset($parVille[$villeId])) {
+                    $parVille[$villeId] = [
+                        'ville_libele' => $besoin['ville_libele'],
+                        'items' => [],
+                        'total_quantite' => 0,
+                        'total_montant' => 0
+                    ];
+                }
+                $parVille[$villeId]['items'][] = $distribution;
+                $parVille[$villeId]['total_quantite'] += $quantiteADonner;
+                $parVille[$villeId]['total_montant'] += $distribution['montant'];
+            }
+
+            // Stock non distribué (reste après arrondis vers le bas)
+            $quantiteRestante = $quantiteStock - $quantiteDistribuee;
+            if ($quantiteRestante > 0) {
+                $nonDistribues[] = [
+                    'element_libele' => $stock['element_libele'],
+                    'quantite' => $quantiteRestante,
+                    'raison' => 'Reste après distribution proportionnelle (arrondis)'
                 ];
             }
         }

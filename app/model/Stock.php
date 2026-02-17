@@ -22,19 +22,17 @@ class Stock
     public function getStockDisponible(): array
     {
         return $this->db->fetchAll("
-            SELECT 
-                idelement,
-                element_libele,
-                type_besoin,
-                prix_unitaire,
-                quantite_dons,
-                quantite_achats,
-                quantite_distribuee,
-                quantite_stock AS stock_disponible,
-                (quantite_stock * prix_unitaire) AS valeur_stock
-            FROM vue_stock
-            WHERE quantite_stock > 0
-            ORDER BY type_besoin, element_libele
+            SELECT s.*, 
+                   s.quantite_stock AS stock_disponible,
+                   e.libele AS element_libele,
+                   tb.libele AS type_besoin,
+                   e.pu AS prix_unitaire,
+                   (s.quantite_stock * e.pu) AS valeur_stock
+            FROM vue_stock s
+            JOIN bn_element e ON s.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            WHERE s.quantite_stock > 0
+            ORDER BY tb.libele, e.libele
         ");
     }
 
@@ -44,18 +42,16 @@ class Stock
     public function getAll(): array
     {
         return $this->db->fetchAll("
-            SELECT 
-                idelement,
-                element_libele,
-                type_besoin,
-                prix_unitaire,
-                quantite_dons,
-                quantite_achats,
-                quantite_distribuee,
-                quantite_stock AS stock_disponible,
-                (quantite_stock * prix_unitaire) AS valeur_stock
-            FROM vue_stock
-            ORDER BY type_besoin, element_libele
+            SELECT s.*, 
+                   s.quantite_stock AS stock_disponible,
+                   e.libele AS element_libele,
+                   tb.libele AS type_besoin,
+                   e.pu AS prix_unitaire,
+                   (s.quantite_stock * e.pu) AS valeur_stock
+            FROM vue_stock s
+            JOIN bn_element e ON s.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            ORDER BY tb.libele, e.libele
         ");
     }
 
@@ -65,18 +61,16 @@ class Stock
     public function getByElement(int $idElement): ?array
     {
         $row = $this->db->fetchRow("
-            SELECT 
-                idelement,
-                element_libele,
-                type_besoin,
-                prix_unitaire,
-                quantite_dons,
-                quantite_achats,
-                quantite_distribuee,
-                quantite_stock AS stock_disponible,
-                (quantite_stock * prix_unitaire) AS valeur_stock
-            FROM vue_stock
-            WHERE idelement = ?
+            SELECT s.*, 
+                   s.quantite_stock AS stock_disponible,
+                   e.libele AS element_libele,
+                   tb.libele AS type_besoin,
+                   e.pu AS prix_unitaire,
+                   (s.quantite_stock * e.pu) AS valeur_stock
+            FROM vue_stock s
+            JOIN bn_element e ON s.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            WHERE s.idelement = ?
         ", [$idElement]);
 
         $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
@@ -89,8 +83,9 @@ class Stock
     public function getTotalValeur(): float
     {
         $row = $this->db->fetchRow("
-            SELECT COALESCE(SUM(quantite_stock * prix_unitaire), 0) AS total
-            FROM vue_stock
+            SELECT COALESCE(SUM(s.quantite_stock * e.pu), 0) AS total
+            FROM vue_stock s
+            JOIN bn_element e ON s.idelement = e.id
         ");
         
         $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
@@ -98,13 +93,11 @@ class Stock
     }
 
     /**
-     * Récupère le récap global (besoins vs stock) - retourne une seule ligne
+     * Récupère le récap global (besoins vs stock)
      */
-    public function getRecapGlobal(): ?array
+    public function getRecapGlobal(): array
     {
-        $row = $this->db->fetchRow("SELECT * FROM vue_recap_global");
-        $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
-        return empty($data) ? null : $data;
+        return $this->db->fetchAll("SELECT * FROM vue_recap_global ORDER BY type_besoin, element");
     }
 
     /**
@@ -114,22 +107,21 @@ class Stock
     {
         return $this->db->fetchAll("
             SELECT 
-                idTypeBesoin AS type_id,
-                type_besoin,
-                SUM(quantite_dons) AS total_dons,
-                SUM(quantite_achats) AS total_achats,
-                SUM(quantite_distribuee) AS total_distribue,
-                SUM(quantite_stock) AS stock_disponible,
-                SUM(quantite_stock * prix_unitaire) AS valeur_stock
-            FROM vue_stock
-            GROUP BY idTypeBesoin, type_besoin
-            ORDER BY type_besoin
+                tb.id AS type_id,
+                tb.libele AS type_besoin,
+                COALESCE(SUM(s.quantite_dons), 0) AS total_dons,
+                COALESCE(SUM(s.quantite_achats), 0) AS total_achats,
+                COALESCE(SUM(s.quantite_distribuee), 0) AS total_distribue,
+                COALESCE(SUM(s.quantite_stock), 0) AS stock_disponible,
+                COALESCE(SUM(s.quantite_stock * e.pu), 0) AS valeur_stock
+            FROM bn_typeBesoin tb
+            LEFT JOIN bn_element e ON e.idtypebesoin = tb.id
+            LEFT JOIN vue_stock s ON s.idelement = e.id
+            GROUP BY tb.id, tb.libele
+            ORDER BY tb.libele
         ");
     }
 
-    /**
-     * Argent disponible pour achats = Dons en argent - Montant des achats effectués
-     */
     public function getArgentDisponible(): float
     {
         $row = $this->db->fetchRow("

@@ -188,19 +188,52 @@ include __DIR__ . '/../layouts/header.php';
 
                 <!-- Boutons d'action -->
                 <?php if (!empty($stockDisponible) && !$simule): ?>
-                    <div class="text-center mb-4">
-                        <form method="POST" action="<?= $baseUrl ?>/don/simuler" class="d-inline">
-                            <button type="submit" class="btn btn-warning btn-lg me-2">
-                                <i class="bi bi-play-fill me-2"></i>Simuler la distribution FIFO
-                            </button>
-                        </form>
-                        <form method="POST" action="<?= $baseUrl ?>/don/distribuer-auto" class="d-inline">
-                            <button type="submit" class="btn btn-success btn-lg"
-                                    onclick="return confirm('Distribuer automatiquement le stock aux villes ?')">
-                                <i class="bi bi-lightning me-2"></i>Distribution automatique
-                            </button>
-                        </form>
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-sliders me-2"></i>Méthode de distribution
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="<?= $baseUrl ?>/don/simuler" id="formSimulation">
+                                <div class="row align-items-end">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="methode" class="form-label fw-bold">Choisir la méthode de dispatch :</label>
+                                        <select name="methode" id="methode" class="form-select form-select-lg">
+                                            <option value="fifo" selected>
+                                                Priorité par date (FIFO)
+                                            </option>
+                                            <option value="plus_petit_besoin">
+                                                Priorité au plus petit besoin
+                                            </option>
+                                            <option value="proportionnelle">
+                                                Distribution proportionnelle
+                                            </option>
+                                        </select>
+                                        <div class="form-text" id="methodeDescription">
+                                            Le stock est distribué en priorité aux besoins les plus anciens.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3 te    xt-center">
+                                        <button type="submit" class="btn btn-warning btn-lg me-2">
+                                            <i class="bi bi-play-fill me-2"></i>Simuler la distribution
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
+
+                    <script>
+                    document.getElementById('methode').addEventListener('change', function() {
+                        const descriptions = {
+                            'fifo': 'Le stock est distribué en priorité aux besoins les plus anciens.',
+                            'plus_petit_besoin': 'Le stock est distribué en priorité aux villes ayant les plus petits besoins restants.',
+                            'proportionnelle': 'Le stock est distribué proportionnellement aux besoins de chaque ville (arrondi vers le bas).'
+                        };
+                        document.getElementById('methodeDescription').textContent = descriptions[this.value] || '';
+                    });
+                    </script>
                 <?php endif; ?>
 
                 <!-- Résultat de la simulation -->
@@ -213,9 +246,18 @@ include __DIR__ . '/../layouts/header.php';
                             </h5>
                         </div>
                         <div class="card-body">
+                            <?php
+                            $methodeLabels = [
+                                'fifo' => ['📅 Priorité par date (FIFO)', 'Le stock sera distribué en priorité aux besoins les plus anciens.'],
+                                'plus_petit_besoin' => ['📉 Priorité au plus petit besoin', 'Le stock sera distribué en priorité aux villes ayant les plus petits besoins restants.'],
+                                'proportionnelle' => ['⚖️ Distribution proportionnelle', 'Le stock sera distribué proportionnellement aux besoins de chaque ville (arrondi vers le bas).']
+                            ];
+                            $methodeUsed = $resultat['methode'] ?? 'fifo';
+                            $methodeInfo = $methodeLabels[$methodeUsed] ?? $methodeLabels['fifo'];
+                            ?>
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <strong>Distribution FIFO:</strong> Le stock sera distribué en priorité aux besoins les plus anciens.
+                                <strong><?= $methodeInfo[0] ?> :</strong> <?= $methodeInfo[1] ?>
                             </div>
 
                             <!-- Résumé -->
