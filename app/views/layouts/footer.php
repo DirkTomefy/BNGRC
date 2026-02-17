@@ -1,5 +1,25 @@
     </main>
 
+    <?php
+        if (isset($toUrl) === false) {
+            $baseUrl = '';
+            if (class_exists('Flight')) {
+                $baseUrl = Flight::get('flight.base_url');
+            }
+            $baseUrl = rtrim((string)($baseUrl ?? ''), '/');
+            $toUrl = static function ($path) use ($baseUrl) {
+                $path = (string)$path;
+                if ($path === '' || preg_match('#^(https?:)?//#', $path) === 1) {
+                    return $path;
+                }
+                if ($path[0] === '/') {
+                    return $baseUrl . $path;
+                }
+                return $baseUrl . '/' . $path;
+            };
+        }
+    ?>
+
     <!-- Footer -->
     <footer class="footer-custom mt-5">
         <div class="container">
@@ -19,9 +39,9 @@
                         <i class="bi bi-link-45deg me-2"></i>Liens rapides
                     </h6>
                     <ul class="list-unstyled small mb-0">
-                        <li><a href="/dashboard" class="footer-link"><i class="bi bi-chevron-right me-1"></i>Tableau de bord</a></li>
-                        <li><a href="/besoin/saisie" class="footer-link"><i class="bi bi-chevron-right me-1"></i>Saisie des besoins</a></li>
-                        <li><a href="/don/saisie" class="footer-link"><i class="bi bi-chevron-right me-1"></i>Saisie des dons</a></li>
+                        <li><a href="<?= htmlspecialchars($toUrl('/dashboard')) ?>" class="footer-link"><i class="bi bi-chevron-right me-1"></i>Tableau de bord</a></li>
+                        <li><a href="<?= htmlspecialchars($toUrl('/besoin/saisie')) ?>" class="footer-link"><i class="bi bi-chevron-right me-1"></i>Saisie des besoins</a></li>
+                        <li><a href="<?= htmlspecialchars($toUrl('/don/saisie')) ?>" class="footer-link"><i class="bi bi-chevron-right me-1"></i>Saisie des dons</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
@@ -50,17 +70,17 @@
     </footer>
 
     <!-- Bootstrap JS -->
-    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= htmlspecialchars($toUrl('assets/bootstrap/js/bootstrap.bundle.min.js')) ?>"></script>
     
     <?php if (!empty($pageJs)): ?>
         <?php if (is_array($pageJs)): ?>
             <?php foreach ($pageJs as $js): ?>
-                <script src="<?= htmlspecialchars($js) ?>"></script>
+                <script src="<?= htmlspecialchars($toUrl($js)) ?>"></script>
             <?php endforeach; ?>
         <?php elseif (is_string($pageJs) && strpos(trim($pageJs), '<script') !== false): ?>
             <?= $pageJs ?>
         <?php elseif (is_string($pageJs)): ?>
-            <script src="<?= htmlspecialchars($pageJs) ?>"></script>
+            <script src="<?= htmlspecialchars($toUrl($pageJs)) ?>"></script>
         <?php endif; ?>
     <?php endif; ?>
 </body>

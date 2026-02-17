@@ -126,7 +126,7 @@ include __DIR__ . '/../layouts/header.php';
                                     <button type="submit" class="btn btn-primary btn-submit btn-lg">
                                         <i class="bi bi-save me-2"></i>Enregistrer le besoin
                                     </button>
-                                    <a href="/dashboard" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <a href="<?= htmlspecialchars($toUrl('/dashboard')) ?>" class="btn btn-outline-secondary btn-lg ms-2">
                                         <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
                                     </a>
                                 </div>

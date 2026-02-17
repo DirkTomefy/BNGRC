@@ -64,7 +64,7 @@ foreach ($panier as $item) {
                             <div class="text-center py-5">
                                 <i class="bi bi-cart-x fs-1 text-muted"></i>
                                 <p class="text-muted mt-2">Le panier est vide</p>
-                                <a href="/don/saisie" class="btn btn-primary">
+                                <a href="<?= htmlspecialchars($toUrl('/don/saisie')) ?>" class="btn btn-primary">
                                     <i class="bi bi-plus-circle me-2"></i>Ajouter des dons
                                 </a>
                             </div>
@@ -115,7 +115,7 @@ foreach ($panier as $item) {
                 <!-- Bouton Simuler (affiché si panier non vide et pas encore simulé) -->
                 <?php if (!empty($panier) && !$simule): ?>
                     <div class="text-center mb-4">
-                        <form method="POST" action="/don/simuler">
+                        <form method="POST" action="<?= htmlspecialchars($toUrl('/don/simuler')) ?>">
                             <button type="submit" class="btn btn-warning btn-lg">
                                 <i class="bi bi-play-fill me-2"></i>Simuler la distribution FIFO
                             </button>
@@ -233,12 +233,12 @@ foreach ($panier as $item) {
 
                     <!-- Boutons Valider / Annuler -->
                     <div class="text-center mb-4">
-                        <form method="POST" action="/don/valider" class="d-inline">
+                        <form method="POST" action="<?= htmlspecialchars($toUrl('/don/valider')) ?>" class="d-inline">
                             <button type="submit" class="btn btn-success btn-lg me-3">
                                 <i class="bi bi-check-circle me-2"></i>Valider et enregistrer
                             </button>
                         </form>
-                        <a href="/don/saisie" class="btn btn-outline-secondary btn-lg">
+                        <a href="<?= htmlspecialchars($toUrl('/don/saisie')) ?>" class="btn btn-outline-secondary btn-lg">
                             <i class="bi bi-arrow-left me-2"></i>Modifier le panier
                         </a>
                     </div>
@@ -246,7 +246,7 @@ foreach ($panier as $item) {
 
                 <!-- Lien retour -->
                 <div class="text-center mt-4">
-                    <a href="/don/saisie" class="btn btn-outline-primary">
+                    <a href="<?= htmlspecialchars($toUrl('/don/saisie')) ?>" class="btn btn-outline-primary">
                         <i class="bi bi-arrow-left me-2"></i>Retour à la saisie des dons
                     </a>
                 </div>

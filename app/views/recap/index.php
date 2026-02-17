@@ -183,22 +183,22 @@ include __DIR__ . '/../layouts/header.php';
                 <!-- Liens rapides -->
                 <div class="row text-center">
                     <div class="col-md-3 mb-3">
-                        <a href="/besoin/saisie" class="btn btn-outline-primary btn-lg w-100">
+                        <a href="<?= htmlspecialchars($toUrl('/besoin/saisie')) ?>" class="btn btn-outline-primary btn-lg w-100">
                             <i class="bi bi-plus-circle me-2"></i>Nouveau besoin
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <a href="/don/saisie" class="btn btn-outline-success btn-lg w-100">
+                        <a href="<?= htmlspecialchars($toUrl('/don/saisie')) ?>" class="btn btn-outline-success btn-lg w-100">
                             <i class="bi bi-gift me-2"></i>Nouveau don
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <a href="/achat/saisie" class="btn btn-outline-warning btn-lg w-100">
+                        <a href="<?= htmlspecialchars($toUrl('/achat/saisie')) ?>" class="btn btn-outline-warning btn-lg w-100">
                             <i class="bi bi-bag me-2"></i>Nouvel achat
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <a href="/don/simulation" class="btn btn-outline-info btn-lg w-100">
+                        <a href="<?= htmlspecialchars($toUrl('/don/simulation')) ?>" class="btn btn-outline-info btn-lg w-100">
                             <i class="bi bi-play-circle me-2"></i>Simulation FIFO
                         </a>
                     </div>

@@ -65,7 +65,7 @@ include __DIR__ . '/../layouts/header.php';
                         </h5>
                     </div>
                     <div class="card-body p-4">
-                        <form method="POST" action="/don/saisie">
+                        <form method="POST" action="<?= htmlspecialchars($toUrl('/don/saisie')) ?>">
                             <div class="row g-3">
                                 <!-- Élément -->
                                 <div class="col-md-12">
@@ -147,7 +147,7 @@ include __DIR__ . '/../layouts/header.php';
                                     <button type="submit" class="btn btn-success btn-submit btn-lg">
                                         <i class="bi bi-plus-circle me-2"></i>Ajouter au panier
                                     </button>
-                                    <a href="/dashboard" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <a href="<?= htmlspecialchars($toUrl('/dashboard')) ?>" class="btn btn-outline-secondary btn-lg ms-2">
                                         <i class="bi bi-arrow-left me-2"></i>Retour
                                     </a>
                                 </div>
@@ -163,7 +163,7 @@ include __DIR__ . '/../layouts/header.php';
                             <i class="bi bi-cart-fill me-2"></i>Panier de dons en attente
                             <span class="badge bg-dark ms-2"><?= count($panierDons) ?> don(s)</span>
                         </h5>
-                        <form method="POST" action="/don/vider" class="d-inline">
+                        <form method="POST" action="<?= htmlspecialchars($toUrl('/don/vider')) ?>" class="d-inline">
                             <button type="submit" class="btn btn-sm btn-outline-danger" 
                                     onclick="return confirm('Vider tout le panier ?')">
                                 <i class="bi bi-trash me-1"></i>Vider le panier
@@ -206,7 +206,7 @@ include __DIR__ . '/../layouts/header.php';
                                         <td class="text-end fw-bold"><?= number_format($item['quantite'] * $item['element_pu'], 0, ',', ' ') ?> Ar</td>
                                         <td><small class="text-muted"><?= date('d/m/Y', strtotime($item['date'])) ?></small></td>
                                         <td class="text-center">
-                                            <form method="POST" action="/don/supprimer" class="d-inline">
+                                            <form method="POST" action="<?= htmlspecialchars($toUrl('/don/supprimer')) ?>" class="d-inline">
                                                 <input type="hidden" name="index" value="<?= $index ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Retirer">
                                                     <i class="bi bi-x-lg"></i>
@@ -343,7 +343,7 @@ include __DIR__ . '/../layouts/header.php';
 
                         <!-- Bouton DISTRIBUER -->
                         <div class="text-center mt-4">
-                            <form method="POST" action="/don/distribuer">
+                            <form method="POST" action="<?= htmlspecialchars($toUrl('/don/distribuer')) ?>">
                                 <button type="submit" class="btn btn-primary btn-lg px-5 shadow"
                                         onclick="return confirm('Confirmer la distribution FIFO de <?= count($panierDons) ?> don(s) vers <?= count($previsualisation['parVille'] ?? []) ?> ville(s) ?')">
                                     <i class="bi bi-truck me-2"></i>Distribuer les dons (FIFO)

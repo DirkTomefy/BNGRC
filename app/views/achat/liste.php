@@ -42,7 +42,7 @@ include __DIR__ . '/../layouts/header.php';
                                 <label class="form-label fw-bold">
                                     <i class="bi bi-funnel me-1"></i>Filtrer par ville
                                 </label>
-                                <select class="form-select" id="filtreVille" onchange="window.location.href = this.value ? '/achat/liste/' + this.value : '/achat/liste'">
+                                <select class="form-select" id="filtreVille" onchange="window.location.href = this.value ? '<?= htmlspecialchars($toUrl('/achat/liste/')) ?>' + this.value : '<?= htmlspecialchars($toUrl('/achat/liste')) ?>'">
                                     <option value="">Toutes les villes</option>
                                     <?php foreach ($villes as $ville): ?>
                                         <option value="<?= $ville['id'] ?>" <?= $villeId == $ville['id'] ? 'selected' : '' ?>>
@@ -57,7 +57,7 @@ include __DIR__ . '/../layouts/header.php';
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
-                                <a href="/achat/saisie" class="btn btn-success">
+                                <a href="<?= htmlspecialchars($toUrl('/achat/saisie')) ?>" class="btn btn-success">
                                     <i class="bi bi-plus-circle me-2"></i>Nouvel achat
                                 </a>
                             </div>
@@ -118,7 +118,7 @@ include __DIR__ . '/../layouts/header.php';
                             <div class="text-center py-5">
                                 <i class="bi bi-inbox fs-1 text-muted"></i>
                                 <p class="text-muted mt-2">Aucun achat enregistré</p>
-                                <a href="/achat/saisie" class="btn btn-primary">
+                                <a href="<?= htmlspecialchars($toUrl('/achat/saisie')) ?>" class="btn btn-primary">
                                     <i class="bi bi-plus-circle me-2"></i>Créer un achat
                                 </a>
                             </div>
