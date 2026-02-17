@@ -1,0 +1,17 @@
+date,type_don,libelle,quantite
+2026-02-16,argent,Argent,5000000
+2026-02-16,argent,Argent,3000000
+2026-02-17,argent,Argent,4000000
+2026-02-17,argent,Argent,1500000
+2026-02-17,argent,Argent,6000000
+2026-02-16,nature,Riz (kg),400
+2026-02-16,nature,Eau (L),600
+2026-02-17,materiel,Tôle,50
+2026-02-17,materiel,Bâche,70
+2026-02-17,nature,Haricots,100
+2026-02-18,nature,Riz (kg),2000
+2026-02-18,materiel,Tôle,300
+2026-02-18,nature,Eau (L),5000
+2026-02-19,argent,Argent,20000000
+2026-02-19,materiel,Bâche,500
+2026-02-17,nature,Haricots,88
