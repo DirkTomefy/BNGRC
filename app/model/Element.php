@@ -58,4 +58,18 @@ class Element
         $stmt = $this->db->runQuery("DELETE FROM bn_element WHERE id = ?", [$id]);
         return $stmt->rowCount() > 0;
     }
+
+    /**
+     * Récupère tous les éléments sauf l'argent (pour les achats)
+     */
+    public function getAllSansArgent(): array
+    {
+        return $this->db->fetchAll("
+            SELECT e.*, tb.libele as type_besoin_libele 
+            FROM bn_element e 
+            LEFT JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id 
+            WHERE tb.libele != 'Argent'
+            ORDER BY e.libele
+        ");
+    }
 }
