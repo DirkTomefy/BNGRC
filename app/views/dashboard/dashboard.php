@@ -32,7 +32,7 @@ function getCouvertureClass($pourcentage) {
 
 $pageTitle = 'Dashboard - BNGRC Madagascar';
 $currentPage = 'dashboard';
-$pageCss = ['assets/css/dashboard/dashboard.css'];
+$pageCss = [];
 include __DIR__ . '/../layouts/header.php';
 
 // Initialisation des variables
@@ -69,107 +69,143 @@ foreach ($stockDisponible as $item) {
 ?>
 
     <!-- En-tête -->
-    <div class="container-fluid py-4 bg-light">
-        <div class="row justify-content-center">
-            <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold text-primary">
-                    <i class="bi bi-speedometer2 me-2"></i>Tableau de bord BNGRC
-                </h1>
-                <p class="lead text-secondary mb-0">Suivi des besoins et distributions - Madagascar</p>
-            </div>
+    <div class="page-header">
+        <div class="container text-center">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-speedometer2 text-primary me-3"></i>Tableau de bord BNGRC
+            </h1>
+            <p class="lead text-secondary mb-0">Suivi des besoins et distributions - Madagascar</p>
         </div>
     </div>
 
-    <div class="container-fluid py-4">
+    <div class="container-fluid px-4 py-4">
         
         <!-- Statistiques globales -->
-        <div class="row g-3 mb-4">
-            <div class="col-lg-2 col-md-4 col-6">
+        <div class="row g-4 mb-5">
+            <div class="col-xl-2 col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 bg-primary text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-geo-alt fs-2"></i>
-                        <h3 class="mb-0 mt-2"><?= count($donneesParVille) ?></h3>
-                        <small>Villes</small>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Villes</h6>
+                                <h2 class="display-6 fw-bold mb-0"><?= count($donneesParVille) ?></h2>
+                            </div>
+                            <i class="bi bi-geo-alt fs-1 opacity-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
+            <div class="col-xl-2 col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 bg-warning text-dark">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-exclamation-triangle fs-2"></i>
-                        <h3 class="mb-0 mt-2"><?= number_format($totalBesoins, 0, ',', ' ') ?></h3>
-                        <small>Besoins totaux</small>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-dark-50 mb-2">Besoins</h6>
+                                <h2 class="display-6 fw-bold mb-0"><?= number_format($totalBesoins, 0, ',', ' ') ?></h2>
+                            </div>
+                            <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
+            <div class="col-xl-2 col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 bg-success text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-truck fs-2"></i>
-                        <h3 class="mb-0 mt-2"><?= number_format($totalDistribue, 0, ',', ' ') ?></h3>
-                        <small>Distribués</small>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Distribués</h6>
+                                <h2 class="display-6 fw-bold mb-0"><?= number_format($totalDistribue, 0, ',', ' ') ?></h2>
+                            </div>
+                            <i class="bi bi-truck fs-1 opacity-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
+            <div class="col-xl-2 col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 bg-danger text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-hourglass-split fs-2"></i>
-                        <h3 class="mb-0 mt-2"><?= number_format($totalRestant, 0, ',', ' ') ?></h3>
-                        <small>Manquants</small>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Manquants</h6>
+                                <h2 class="display-6 fw-bold mb-0"><?= number_format($totalRestant, 0, ',', ' ') ?></h2>
+                            </div>
+                            <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
+            <div class="col-xl-2 col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 bg-info text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-box-seam fs-2"></i>
-                        <h3 class="mb-0 mt-2"><?= number_format($totalStock, 0, ',', ' ') ?></h3>
-                        <small>En stock</small>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">En stock</h6>
+                                <h2 class="display-6 fw-bold mb-0"><?= number_format($totalStock, 0, ',', ' ') ?></h2>
+                            </div>
+                            <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-6">
+            <div class="col-xl-2 col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 bg-secondary text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-cash-coin fs-2"></i>
-                        <h3 class="mb-0 mt-2"><?= number_format($argentDisponible, 0, ',', ' ') ?></h3>
-                        <small>Ar disponible</small>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Budget</h6>
+                                <h2 class="display-6 fw-bold mb-0"><?= number_format($argentDisponible, 0, ',', ' ') ?></h2>
+                                <small>Ar</small>
+                            </div>
+                            <i class="bi bi-cash-coin fs-1 opacity-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Barre de progression globale -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body py-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="mb-0">
-                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Progression globale des distributions
-                    </h6>
-                    <span class="badge <?= getCouvertureClass($tauxCouverture) ?> px-3 py-2">
-                        <?= $tauxCouverture ?>% couvert
-                    </span>
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-pie-chart-fill text-primary me-2"></i>Progression globale des distributions
+                    </h5>
+                    <div class="mt-2 mt-sm-0">
+                        <span class="badge <?= getCouvertureClass($tauxCouverture) ?> px-4 py-2 fs-6">
+                            <?= $tauxCouverture ?>% couvert
+                        </span>
+                    </div>
                 </div>
-                <div class="progress" style="height: 25px;">
+                
+                <div class="progress mb-4" style="height: 30px;">
                     <div class="progress-bar progress-bar-striped <?= getCouvertureClass($tauxCouverture) ?>" 
                          role="progressbar" 
-                         style="width: <?= min($tauxCouverture, 100) ?>%;">
-                        <?= number_format($totalDistribue, 0, ',', ' ') ?> / <?= number_format($totalBesoins, 0, ',', ' ') ?>
+                         style="width: <?= min($tauxCouverture, 100) ?>%;"
+                         aria-valuenow="<?= $tauxCouverture ?>" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                        <span class="fw-bold"><?= number_format($totalDistribue, 0, ',', ' ') ?> / <?= number_format($totalBesoins, 0, ',', ' ') ?></span>
                     </div>
                 </div>
-                <div class="row mt-3 text-center small">
-                    <div class="col-4">
-                        <span class="text-muted">Montant total besoins</span>
-                        <div class="fw-bold text-warning"><?= number_format($montantTotalBesoins, 0, ',', ' ') ?> Ar</div>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="bg-light rounded-3 p-3 text-center">
+                            <span class="text-muted d-block mb-2">Montant total besoins</span>
+                            <h4 class="fw-bold text-warning mb-0"><?= number_format($montantTotalBesoins, 0, ',', ' ') ?> Ar</h4>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <span class="text-muted">Montant couvert</span>
-                        <div class="fw-bold text-success"><?= number_format($montantTotalBesoins - $montantTotalRestant, 0, ',', ' ') ?> Ar</div>
+                    <div class="col-md-4">
+                        <div class="bg-light rounded-3 p-3 text-center">
+                            <span class="text-muted d-block mb-2">Montant couvert</span>
+                            <h4 class="fw-bold text-success mb-0"><?= number_format($montantTotalBesoins - $montantTotalRestant, 0, ',', ' ') ?> Ar</h4>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <span class="text-muted">Montant manquant</span>
-                        <div class="fw-bold text-danger"><?= number_format($montantTotalRestant, 0, ',', ' ') ?> Ar</div>
+                    <div class="col-md-4">
+                        <div class="bg-light rounded-3 p-3 text-center">
+                            <span class="text-muted d-block mb-2">Montant manquant</span>
+                            <h4 class="fw-bold text-danger mb-0"><?= number_format($montantTotalRestant, 0, ',', ' ') ?> Ar</h4>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -177,18 +213,20 @@ foreach ($stockDisponible as $item) {
 
         <!-- Stock disponible (résumé) -->
         <?php if (!empty($stockDisponible)): ?>
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-info text-white py-2">
-                <h6 class="mb-0">
-                    <i class="bi bi-box-seam me-2"></i>Stock global disponible
-                    <a href="<?= $toUrl('/don/simulation') ?>" class="btn btn-sm btn-light float-end">
-                        <i class="bi bi-truck me-1"></i>Distribuer
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-info text-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-seam me-2"></i>Stock global disponible
+                    </h5>
+                    <a href="<?= $toUrl('/don/simulation') ?>" class="btn btn-light">
+                        <i class="bi bi-truck me-2"></i>Distribuer
                     </a>
-                </h6>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Élément</th>
@@ -198,17 +236,26 @@ foreach ($stockDisponible as $item) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($stockDisponible as $item): ?>
+                            <?php foreach (array_slice($stockDisponible, 0, 5) as $item): ?>
                                 <?php if (($item['type_besoin'] ?? '') !== 'Argent'): ?>
                                 <tr>
                                     <td class="fw-bold"><?= htmlspecialchars($item['element_libele'] ?? '') ?></td>
                                     <td><span class="badge <?= getBadgeClass($item['type_besoin'] ?? '') ?>"><?= htmlspecialchars($item['type_besoin'] ?? '') ?></span></td>
                                     <td class="text-end"><?= number_format($item['stock_disponible'] ?? 0, 0, ',', ' ') ?></td>
-                                    <td class="text-end"><?= number_format($item['valeur_stock'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                    <td class="text-end text-primary fw-bold"><?= number_format($item['valeur_stock'] ?? 0, 0, ',', ' ') ?> Ar</td>
                                 </tr>
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         </tbody>
+                        <?php if (count($stockDisponible) > 5): ?>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    <i class="bi bi-plus-circle me-1"></i> <?= count($stockDisponible) - 5 ?> autres éléments...
+                                </td>
+                            </tr>
+                        </tfoot>
+                        <?php endif; ?>
                     </table>
                 </div>
             </div>
@@ -216,7 +263,7 @@ foreach ($stockDisponible as $item) {
         <?php endif; ?>
 
         <!-- Cartes par ville -->
-        <h5 class="mb-3">
+        <h5 class="mb-4">
             <i class="bi bi-building me-2 text-primary"></i>Détail par ville
         </h5>
         
@@ -238,13 +285,13 @@ foreach ($stockDisponible as $item) {
                     $estComplet = $qRestante <= 0;
                     ?>
                     
-                    <div class="col-xl-6 col-12">
-                        <div class="card border-0 shadow h-100 <?= $estComplet ? 'border-success' : '' ?>">
+                    <div class="col-xl-6">
+                        <div class="card border-0 shadow h-100">
                             <!-- En-tête ville -->
                             <div class="card-header <?= $estComplet ? 'bg-success' : 'bg-primary' ?> text-white py-3">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h5 class="mb-0">
+                                        <h5 class="mb-1">
                                             <i class="bi bi-geo-alt-fill me-2"></i><?= htmlspecialchars($data['ville'] ?? '') ?>
                                         </h5>
                                         <small class="opacity-75">
@@ -262,33 +309,33 @@ foreach ($stockDisponible as $item) {
                                 </div>
                             </div>
                             
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <!-- Barre de progression -->
-                                <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress mb-4" style="height: 10px;">
                                     <div class="progress-bar <?= getCouvertureClass($progression) ?>" 
                                          style="width: <?= min($progression, 100) ?>%;"></div>
                                 </div>
                                 
                                 <!-- Résumé rapide -->
-                                <div class="row text-center mb-3">
+                                <div class="row g-3 mb-4">
                                     <div class="col-4">
-                                        <div class="p-2 bg-light rounded">
+                                        <div class="bg-light rounded-3 p-3 text-center">
                                             <i class="bi bi-exclamation-triangle text-warning"></i>
-                                            <div class="fw-bold"><?= number_format($qBesoin, 0, ',', ' ') ?></div>
+                                            <div class="fw-bold mt-2"><?= number_format($qBesoin, 0, ',', ' ') ?></div>
                                             <small class="text-muted">Besoins</small>
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="p-2 bg-light rounded">
+                                        <div class="bg-light rounded-3 p-3 text-center">
                                             <i class="bi bi-check-circle text-success"></i>
-                                            <div class="fw-bold text-success"><?= number_format($qDonnee, 0, ',', ' ') ?></div>
+                                            <div class="fw-bold text-success mt-2"><?= number_format($qDonnee, 0, ',', ' ') ?></div>
                                             <small class="text-muted">Reçu</small>
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="p-2 bg-light rounded">
+                                        <div class="bg-light rounded-3 p-3 text-center">
                                             <i class="bi bi-hourglass-split text-danger"></i>
-                                            <div class="fw-bold <?= $qRestante > 0 ? 'text-danger' : 'text-success' ?>">
+                                            <div class="fw-bold <?= $qRestante > 0 ? 'text-danger' : 'text-success' ?> mt-2">
                                                 <?= number_format($qRestante, 0, ',', ' ') ?>
                                             </div>
                                             <small class="text-muted">Manque</small>
@@ -299,7 +346,7 @@ foreach ($stockDisponible as $item) {
                                 <!-- Tableau détaillé des éléments -->
                                 <?php if (!empty($data['elements'])): ?>
                                 <div class="table-responsive">
-                                    <table class="table table-sm table-hover mb-0">
+                                    <table class="table table-sm align-middle mb-0">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Élément</th>
@@ -319,7 +366,7 @@ foreach ($stockDisponible as $item) {
                                                     <td>
                                                         <span class="fw-bold"><?= htmlspecialchars($elem['element'] ?? '') ?></span>
                                                         <br>
-                                                        <span class="badge <?= getBadgeClass($elem['type_besoin'] ?? '') ?> badge-sm">
+                                                        <span class="badge <?= getBadgeClass($elem['type_besoin'] ?? '') ?>">
                                                             <?= htmlspecialchars($elem['type_besoin'] ?? '') ?>
                                                         </span>
                                                     </td>
@@ -334,10 +381,8 @@ foreach ($stockDisponible as $item) {
                                                             <span class="badge bg-danger"><?= number_format($elemRestant, 0, ',', ' ') ?></span>
                                                         <?php endif; ?>
                                                     </td>
-                                                    <td class="text-end small <?= ($elem['montant_restant'] ?? 0) > 0 ? 'text-danger' : 'text-success' ?>">
-                                                        <?= ($elem['montant_restant'] ?? 0) > 0 
-                                                            ? number_format($elem['montant_restant'], 0, ',', ' ') . ' Ar'
-                                                            : '<i class="bi bi-check-circle"></i>' ?>
+                                                    <td class="text-end <?= ($elem['montant_restant'] ?? 0) > 0 ? 'text-danger' : 'text-success' ?> fw-bold">
+                                                        <?= number_format($elem['montant_restant'] ?? 0, 0, ',', ' ') ?> Ar
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -348,9 +393,9 @@ foreach ($stockDisponible as $item) {
                             </div>
                             
                             <!-- Pied de carte -->
-                            <div class="card-footer bg-light">
+                            <div class="card-footer bg-light py-3">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small">
+                                    <span class="text-muted">
                                         <i class="bi bi-list-check me-1"></i><?= count($data['elements'] ?? []) ?> élément(s)
                                     </span>
                                     <?php if ($mRestant > 0): ?>
@@ -359,7 +404,7 @@ foreach ($stockDisponible as $item) {
                                         </span>
                                     <?php else: ?>
                                         <span class="badge bg-success">
-                                            <i class="bi bi-check-circle me-1"></i>Tous les besoins couverts
+                                            <i class="bi bi-check-circle me-1"></i>Besoins couverts
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -371,28 +416,34 @@ foreach ($stockDisponible as $item) {
         <?php endif; ?>
 
         <!-- Actions rapides -->
-        <div class="card border-0 shadow-sm mt-4">
-            <div class="card-body">
-                <h6 class="mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions rapides</h6>
-                <div class="row g-2">
+        <div class="card border-0 shadow-sm mt-5">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-lightning-charge text-warning me-2"></i>Actions rapides
+                </h5>
+                <div class="row g-3">
                     <div class="col-md-3 col-6">
-                        <a href="<?= $toUrl('/besoin/saisie') ?>" class="btn btn-outline-warning w-100">
-                            <i class="bi bi-plus-circle me-2"></i>Ajouter besoin
+                        <a href="<?= $toUrl('/besoin/saisie') ?>" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                            <span>Nouveau besoin</span>
                         </a>
                     </div>
                     <div class="col-md-3 col-6">
-                        <a href="<?= $toUrl('/don/saisie') ?>" class="btn btn-outline-success w-100">
-                            <i class="bi bi-gift me-2"></i>Ajouter don
+                        <a href="<?= $toUrl('/don/saisie') ?>" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-gift fs-4 d-block mb-2"></i>
+                            <span>Nouveau don</span>
                         </a>
                     </div>
                     <div class="col-md-3 col-6">
-                        <a href="<?= $toUrl('/achat/saisie') ?>" class="btn btn-outline-info w-100">
-                            <i class="bi bi-bag me-2"></i>Nouvel achat
+                        <a href="<?= $toUrl('/achat/saisie') ?>" class="btn btn-outline-warning w-100 py-3">
+                            <i class="bi bi-bag fs-4 d-block mb-2"></i>
+                            <span>Nouvel achat</span>
                         </a>
                     </div>
                     <div class="col-md-3 col-6">
-                        <a href="<?= $toUrl('/don/simulation') ?>" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-truck me-2"></i>Distribuer
+                        <a href="<?= $toUrl('/don/simulation') ?>" class="btn btn-outline-info w-100 py-3">
+                            <i class="bi bi-truck fs-4 d-block mb-2"></i>
+                            <span>Distribuer</span>
                         </a>
                     </div>
                 </div>

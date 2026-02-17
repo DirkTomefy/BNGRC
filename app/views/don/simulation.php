@@ -16,21 +16,19 @@ $totalValeur = array_sum(array_column($stockDisponible, 'valeur_stock'));
 
 $pageTitle = 'Distribution du stock - BNGRC';
 $currentPage = 'don';
-$pageCss = ['assets/css/besoin/saisie.css'];
+$pageCss = [];
 include __DIR__ . '/../layouts/header.php';
 ?>
 
     <!-- En-tête -->
-    <div class="container-fluid py-5">
-        <div class="row justify-content-center">
-            <div class="col-12 text-center">
-                <h1 class="display-4 fw-bold header-title">
-                    <i class="bi bi-truck text-primary"></i> Distribution du stock
-                </h1>
-                <p class="lead text-secondary">
-                    Distribuez le stock disponible aux villes selon leurs besoins (FIFO)
-                </p>
-            </div>
+    <div class="page-header">
+        <div class="container text-center">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-truck text-primary me-3"></i>Distribution du stock
+            </h1>
+            <p class="lead text-secondary">
+                Distribuez le stock disponible aux villes selon leurs besoins (FIFO)
+            </p>
         </div>
     </div>
 
@@ -41,7 +39,7 @@ include __DIR__ . '/../layouts/header.php';
                 <!-- Messages -->
                 <?php if (!empty($success)): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle me-2"></i>
+                        <i class="bi bi-check-circle-fill me-2"></i>
                         <?= htmlspecialchars($success) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                     </div>
@@ -49,70 +47,85 @@ include __DIR__ . '/../layouts/header.php';
 
                 <?php if (!empty($error)): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         <?= htmlspecialchars($error) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                     </div>
                 <?php endif; ?>
 
                 <!-- Stats rapides -->
-                <div class="row mb-4">
+                <div class="row g-4 mb-4">
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm text-center bg-primary text-white">
-                            <div class="card-body py-3">
-                                <i class="bi bi-box-seam fs-3"></i>
-                                <h4 class="mt-2 mb-0"><?= number_format($totalStock, 0, ',', ' ') ?></h4>
-                                <small>Unités en stock</small>
+                        <div class="card border-0 shadow-sm bg-primary text-white">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Unités en stock</h6>
+                                        <h3 class="display-6 fw-bold mb-0"><?= number_format($totalStock, 0, ',', ' ') ?></h3>
+                                    </div>
+                                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm text-center bg-success text-white">
-                            <div class="card-body py-3">
-                                <i class="bi bi-cash-coin fs-3"></i>
-                                <h4 class="mt-2 mb-0"><?= number_format($totalValeur, 0, ',', ' ') ?> Ar</h4>
-                                <small>Valeur du stock</small>
+                        <div class="card border-0 shadow-sm bg-success text-white">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-white-50 mb-2">Valeur du stock</h6>
+                                        <h3 class="display-6 fw-bold mb-0"><?= number_format($totalValeur, 0, ',', ' ') ?></h3>
+                                        <small>Ar</small>
+                                    </div>
+                                    <i class="bi bi-cash-coin fs-1 opacity-50"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm text-center bg-warning text-dark">
-                            <div class="card-body py-3">
-                                <i class="bi bi-geo-alt fs-3"></i>
-                                <h4 class="mt-2 mb-0"><?= count($besoinsParVille) ?></h4>
-                                <small>Villes en attente</small>
+                        <div class="card border-0 shadow-sm bg-warning text-dark">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-dark-50 mb-2">Villes en attente</h6>
+                                        <h3 class="display-6 fw-bold mb-0"><?= count($besoinsParVille) ?></h3>
+                                    </div>
+                                    <i class="bi bi-geo-alt fs-1 opacity-50"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Stock disponible -->
-                <div class="card mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-box-seam me-2"></i>Stock disponible
-                            <span class="badge bg-light text-dark ms-2"><?= count($stockDisponible) ?> éléments</span>
-                        </h5>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-box-seam me-2"></i>Stock disponible
+                            </h5>
+                            <span class="badge bg-light text-dark rounded-pill"><?= count($stockDisponible) ?> éléments</span>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <?php if (empty($stockDisponible)): ?>
                             <div class="text-center py-5">
                                 <i class="bi bi-box fs-1 text-muted"></i>
-                                <p class="text-muted mt-2">Aucun stock disponible</p>
+                                <p class="text-muted mt-3 mb-3">Aucun stock disponible</p>
                                 <a href="<?= $baseUrl ?>/don/saisie" class="btn btn-primary">
                                     <i class="bi bi-plus-circle me-2"></i>Ajouter des dons
                                 </a>
                             </div>
                         <?php else: ?>
                             <div class="table-responsive">
-                                <table class="table table-sm table-hover mb-0">
+                                <table class="table table-hover align-middle mb-0">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Élément</th>
                                             <th>Type</th>
                                             <th class="text-end">Stock disponible</th>
                                             <th class="text-end">Prix unitaire</th>
-                                            <th class="text-end">Valeur</th>
+                                            <th class="text-end">Valeur totale</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -129,9 +142,9 @@ include __DIR__ . '/../layouts/header.php';
                                                     ?>
                                                     <span class="badge <?= $typeBadge ?>"><?= htmlspecialchars($typeBesoin) ?></span>
                                                 </td>
-                                                <td class="text-end"><?= number_format($item['stock_disponible'] ?? 0, 0, ',', ' ') ?></td>
+                                                <td class="text-end fw-bold"><?= number_format($item['stock_disponible'] ?? 0, 0, ',', ' ') ?></td>
                                                 <td class="text-end"><?= number_format($item['prix_unitaire'] ?? 0, 0, ',', ' ') ?> Ar</td>
-                                                <td class="text-end fw-bold"><?= number_format($item['valeur_stock'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                                <td class="text-end text-primary fw-bold"><?= number_format($item['valeur_stock'] ?? 0, 0, ',', ' ') ?> Ar</td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -151,32 +164,48 @@ include __DIR__ . '/../layouts/header.php';
 
                 <!-- Besoins par ville -->
                 <?php if (!empty($besoinsParVille)): ?>
-                <div class="card mb-4">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0">
-                            <i class="bi bi-geo-alt me-2"></i>Besoins par ville
-                        </h5>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-geo-alt me-2"></i>Besoins par ville
+                            </h5>
+                            <span class="badge bg-dark text-white rounded-pill"><?= count($besoinsParVille) ?> villes</span>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-sm table-hover mb-0">
+                            <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Ville</th>
-                                        <th class="text-end">Nb besoins</th>
+                                        <th class="text-end">Besoins</th>
                                         <th class="text-end">Quantité totale</th>
                                         <th class="text-end">Montant</th>
                                         <th class="text-end">Déjà reçu</th>
+                                        <th class="text-end">Progression</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($besoinsParVille as $ville): ?>
+                                    <?php foreach ($besoinsParVille as $ville): 
+                                        $progression = ($ville['montant_total'] ?? 0) > 0 
+                                            ? round((($ville['deja_recu'] ?? 0) / $ville['montant_total']) * 100) 
+                                            : 0;
+                                    ?>
                                         <tr>
                                             <td class="fw-bold"><?= htmlspecialchars($ville['ville_libele'] ?? '') ?></td>
                                             <td class="text-end"><?= $ville['nb_besoins'] ?? 0 ?></td>
                                             <td class="text-end"><?= number_format($ville['quantite_totale'] ?? 0, 0, ',', ' ') ?></td>
                                             <td class="text-end"><?= number_format($ville['montant_total'] ?? 0, 0, ',', ' ') ?> Ar</td>
-                                            <td class="text-end text-success"><?= number_format($ville['deja_recu'] ?? 0, 0, ',', ' ') ?></td>
+                                            <td class="text-end text-success fw-bold"><?= number_format($ville['deja_recu'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                            <td class="text-end">
+                                                <div class="d-flex align-items-center justify-content-end">
+                                                    <div class="progress w-50 me-2" style="height: 8px;">
+                                                        <div class="progress-bar bg-success" style="width: <?= $progression ?>%"></div>
+                                                    </div>
+                                                    <span class="small"><?= $progression ?>%</span>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -188,35 +217,36 @@ include __DIR__ . '/../layouts/header.php';
 
                 <!-- Boutons d'action -->
                 <?php if (!empty($stockDisponible) && !$simule): ?>
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-white">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-info text-white py-3">
                             <h5 class="mb-0">
                                 <i class="bi bi-sliders me-2"></i>Méthode de distribution
                             </h5>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body p-4">
                             <form method="POST" action="<?= $baseUrl ?>/don/simuler" id="formSimulation">
-                                <div class="row align-items-end">
-                                    <div class="col-md-6 mb-3">
+                                <div class="row g-4 align-items-end">
+                                    <div class="col-md-8">
                                         <label for="methode" class="form-label fw-bold">Choisir la méthode de dispatch :</label>
                                         <select name="methode" id="methode" class="form-select form-select-lg">
                                             <option value="fifo" selected>
-                                                Priorité par date (FIFO)
+                                                📅 Priorité par date (FIFO) - Les plus anciens d'abord
                                             </option>
                                             <option value="plus_petit_besoin">
-                                                Priorité au plus petit besoin
+                                                📉 Priorité au plus petit besoin - Équité territoriale
                                             </option>
                                             <option value="proportionnelle">
-                                                Distribution proportionnelle
+                                                ⚖️ Distribution proportionnelle - Au prorata des besoins
                                             </option>
                                         </select>
-                                        <div class="form-text" id="methodeDescription">
-                                            Le stock est distribué en priorité aux besoins les plus anciens.
+                                        <div class="form-text text-muted mt-2" id="methodeDescription">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Le stock est distribué en priorité aux besoins les plus anciens (FIFO).
                                         </div>
                                     </div>
-                                    <div class="col-md-6 mb-3 te    xt-center">
-                                        <button type="submit" class="btn btn-warning btn-lg me-2">
-                                            <i class="bi bi-play-fill me-2"></i>Simuler la distribution
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-warning btn-lg w-100">
+                                            <i class="bi bi-calculator me-2"></i>Simuler
                                         </button>
                                     </div>
                                 </div>
@@ -227,62 +257,72 @@ include __DIR__ . '/../layouts/header.php';
                     <script>
                     document.getElementById('methode').addEventListener('change', function() {
                         const descriptions = {
-                            'fifo': 'Le stock est distribué en priorité aux besoins les plus anciens.',
-                            'plus_petit_besoin': 'Le stock est distribué en priorité aux villes ayant les plus petits besoins restants.',
-                            'proportionnelle': 'Le stock est distribué proportionnellement aux besoins de chaque ville (arrondi vers le bas).'
+                            'fifo': '📅 Distribution selon la règle FIFO : les besoins les plus anciens sont servis en premier.',
+                            'plus_petit_besoin': '📉 Équité territoriale : les villes avec les plus petits besoins restants sont prioritaires.',
+                            'proportionnelle': '⚖️ Répartition juste : le stock est distribué proportionnellement aux besoins de chaque ville.'
                         };
-                        document.getElementById('methodeDescription').textContent = descriptions[this.value] || '';
+                        const descElement = document.getElementById('methodeDescription');
+                        descElement.innerHTML = '<i class="bi bi-info-circle me-1"></i>' + descriptions[this.value];
                     });
                     </script>
                 <?php endif; ?>
 
                 <!-- Résultat de la simulation -->
                 <?php if ($simule): ?>
-                    <div class="card mb-4">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0">
-                                <i class="bi bi-check2-all me-2"></i>Résultat de la simulation
-                                <span class="badge bg-light text-dark ms-2"><?= $resultat['totalDistributions'] ?? 0 ?> distributions</span>
-                            </h5>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-success text-white py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-check2-all me-2"></i>Résultat de la simulation
+                                </h5>
+                                <span class="badge bg-light text-dark rounded-pill">
+                                    <?= $resultat['totalDistributions'] ?? 0 ?> distributions
+                                </span>
+                            </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body p-4">
                             <?php
                             $methodeLabels = [
-                                'fifo' => ['📅 Priorité par date (FIFO)', 'Le stock sera distribué en priorité aux besoins les plus anciens.'],
-                                'plus_petit_besoin' => ['📉 Priorité au plus petit besoin', 'Le stock sera distribué en priorité aux villes ayant les plus petits besoins restants.'],
-                                'proportionnelle' => ['⚖️ Distribution proportionnelle', 'Le stock sera distribué proportionnellement aux besoins de chaque ville (arrondi vers le bas).']
+                                'fifo' => ['📅 FIFO', 'Distribution par ordre chronologique'],
+                                'plus_petit_besoin' => ['📉 Plus petit besoin', 'Priorité aux villes les moins pourvues'],
+                                'proportionnelle' => ['⚖️ Proportionnelle', 'Répartition équitable']
                             ];
                             $methodeUsed = $resultat['methode'] ?? 'fifo';
                             $methodeInfo = $methodeLabels[$methodeUsed] ?? $methodeLabels['fifo'];
                             ?>
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle me-2"></i>
-                                <strong><?= $methodeInfo[0] ?> :</strong> <?= $methodeInfo[1] ?>
+                            
+                            <div class="alert alert-info bg-info bg-opacity-10 border-0 mb-4">
+                                <div class="d-flex">
+                                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                                    <div>
+                                        <strong><?= $methodeInfo[0] ?> :</strong> <?= $methodeInfo[1] ?>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Résumé -->
-                            <div class="row mb-4">
+                            <div class="row g-4 mb-4">
                                 <div class="col-md-4">
-                                    <div class="card bg-primary text-white">
-                                        <div class="card-body text-center">
-                                            <h4><?= $resultat['totalDistributions'] ?? 0 ?></h4>
+                                    <div class="card bg-primary text-white border-0">
+                                        <div class="card-body text-center p-4">
+                                            <h2 class="display-6 fw-bold mb-0"><?= $resultat['totalDistributions'] ?? 0 ?></h2>
                                             <small>Distributions</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="card bg-info text-white">
-                                        <div class="card-body text-center">
-                                            <h4><?= number_format($resultat['totalQuantite'] ?? 0, 0, ',', ' ') ?></h4>
+                                    <div class="card bg-info text-white border-0">
+                                        <div class="card-body text-center p-4">
+                                            <h2 class="display-6 fw-bold mb-0"><?= number_format($resultat['totalQuantite'] ?? 0, 0, ',', ' ') ?></h2>
                                             <small>Quantité totale</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="card bg-success text-white">
-                                        <div class="card-body text-center">
-                                            <h4><?= number_format($resultat['totalMontant'] ?? 0, 0, ',', ' ') ?> Ar</h4>
-                                            <small>Montant total</small>
+                                    <div class="card bg-success text-white border-0">
+                                        <div class="card-body text-center p-4">
+                                            <h2 class="display-6 fw-bold mb-0"><?= number_format($resultat['totalMontant'] ?? 0, 0, ',', ' ') ?></h2>
+                                            <small>Montant total (Ar)</small>
                                         </div>
                                     </div>
                                 </div>
@@ -291,44 +331,47 @@ include __DIR__ . '/../layouts/header.php';
                             <!-- Distributions par ville -->
                             <?php if (!empty($resultat['parVille'])): ?>
                                 <?php foreach ($resultat['parVille'] as $villeId => $villeData): ?>
-                                    <div class="card mb-3">
-                                        <div class="card-header bg-secondary text-white">
-                                            <h6 class="mb-0">
-                                                <i class="bi bi-geo-alt-fill me-2"></i><?= htmlspecialchars($villeData['ville_libele'] ?? '') ?>
-                                                <span class="badge bg-light text-dark ms-2"><?= count($villeData['items'] ?? []) ?> éléments</span>
+                                    <div class="card border-0 shadow-sm mb-3">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="mb-0 fw-bold">
+                                                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                                                <?= htmlspecialchars($villeData['ville_libele'] ?? '') ?>
+                                                <span class="badge bg-secondary ms-2"><?= count($villeData['items'] ?? []) ?> éléments</span>
                                             </h6>
                                         </div>
                                         <div class="card-body p-0">
-                                            <table class="table table-sm mb-0">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Élément</th>
-                                                        <th>Type</th>
-                                                        <th class="text-end">Quantité</th>
-                                                        <th class="text-end">Prix unitaire</th>
-                                                        <th class="text-end">Montant</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php foreach ($villeData['items'] ?? [] as $dist): ?>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0">
+                                                    <thead class="table-light">
                                                         <tr>
-                                                            <td class="fw-bold"><?= htmlspecialchars($dist['element_libele'] ?? '') ?></td>
-                                                            <td><span class="badge bg-secondary"><?= htmlspecialchars($dist['type_besoin'] ?? '') ?></span></td>
-                                                            <td class="text-end"><?= number_format($dist['quantite'] ?? 0, 0, ',', ' ') ?></td>
-                                                            <td class="text-end"><?= number_format($dist['prix_unitaire'] ?? 0, 0, ',', ' ') ?> Ar</td>
-                                                            <td class="text-end fw-bold"><?= number_format($dist['montant'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                                            <th>Élément</th>
+                                                            <th>Type</th>
+                                                            <th class="text-end">Quantité</th>
+                                                            <th class="text-end">Prix unitaire</th>
+                                                            <th class="text-end">Montant</th>
                                                         </tr>
-                                                    <?php endforeach; ?>
-                                                </tbody>
-                                                <tfoot class="table-secondary">
-                                                    <tr>
-                                                        <td colspan="2" class="text-end fw-bold">Total</td>
-                                                        <td class="text-end fw-bold"><?= number_format($villeData['total_quantite'] ?? 0, 0, ',', ' ') ?></td>
-                                                        <td></td>
-                                                        <td class="text-end fw-bold"><?= number_format($villeData['total_montant'] ?? 0, 0, ',', ' ') ?> Ar</td>
-                                                    </tr>
-                                                </tfoot>
-                                            </table>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($villeData['items'] ?? [] as $dist): ?>
+                                                            <tr>
+                                                                <td class="fw-bold"><?= htmlspecialchars($dist['element_libele'] ?? '') ?></td>
+                                                                <td><span class="badge bg-secondary"><?= htmlspecialchars($dist['type_besoin'] ?? '') ?></span></td>
+                                                                <td class="text-end"><?= number_format($dist['quantite'] ?? 0, 0, ',', ' ') ?></td>
+                                                                <td class="text-end"><?= number_format($dist['prix_unitaire'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                                                <td class="text-end text-success fw-bold"><?= number_format($dist['montant'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                    <tfoot class="table-light fw-bold">
+                                                        <tr>
+                                                            <td colspan="2" class="text-end">Total ville</td>
+                                                            <td class="text-end"><?= number_format($villeData['total_quantite'] ?? 0, 0, ',', ' ') ?></td>
+                                                            <td></td>
+                                                            <td class="text-end text-success"><?= number_format($villeData['total_montant'] ?? 0, 0, ',', ' ') ?> Ar</td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -337,13 +380,14 @@ include __DIR__ . '/../layouts/header.php';
                             <!-- Non distribués -->
                             <?php if (!empty($resultat['nonDistribues'])): ?>
                                 <div class="alert alert-warning mt-4">
-                                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Stock non distribué</h6>
-                                    <ul class="mb-0">
+                                    <h6 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Stock non distribué</h6>
+                                    <ul class="list-unstyled mb-0">
                                         <?php foreach ($resultat['nonDistribues'] as $nonDist): ?>
-                                            <li>
-                                                <?= htmlspecialchars($nonDist['element_libele'] ?? '') ?> 
-                                                (qté: <?= $nonDist['quantite'] ?? 0 ?>) 
-                                                - <?= htmlspecialchars($nonDist['raison'] ?? '') ?>
+                                            <li class="mb-2">
+                                                <i class="bi bi-dot me-2"></i>
+                                                <strong><?= htmlspecialchars($nonDist['element_libele'] ?? '') ?></strong> 
+                                                (<?= $nonDist['quantite'] ?? 0 ?> unités) - 
+                                                <span class="text-muted"><?= htmlspecialchars($nonDist['raison'] ?? '') ?></span>
                                             </li>
                                         <?php endforeach; ?>
                                     </ul>
@@ -353,22 +397,22 @@ include __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <!-- Boutons Valider / Annuler -->
-                    <div class="text-center mb-4">
+                    <div class="text-center mb-5">
                         <form method="POST" action="<?= $baseUrl ?>/don/valider" class="d-inline">
-                            <button type="submit" class="btn btn-success btn-lg me-3"
-                                    onclick="return confirm('Confirmer la distribution ?')">
+                            <button type="submit" class="btn btn-success btn-lg px-5 me-3"
+                                    onclick="return confirm('Confirmer la distribution ? Cette action est irréversible.')">
                                 <i class="bi bi-check-circle me-2"></i>Valider et distribuer
                             </button>
                         </form>
                         <form method="POST" action="<?= $baseUrl ?>/don/annuler-simulation" class="d-inline">
-                            <button type="submit" class="btn btn-outline-secondary btn-lg">
+                            <button type="submit" class="btn btn-outline-secondary btn-lg px-5">
                                 <i class="bi bi-x-circle me-2"></i>Annuler
                             </button>
                         </form>
                     </div>
                 <?php endif; ?>
 
-                <!-- Lien retour -->
+                <!-- Liens rapides -->
                 <div class="text-center mt-4">
                     <a href="<?= $baseUrl ?>/don/saisie" class="btn btn-outline-primary me-2">
                         <i class="bi bi-plus-circle me-2"></i>Ajouter des dons
