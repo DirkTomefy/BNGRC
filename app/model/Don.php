@@ -4,6 +4,9 @@ namespace app\model;
 
 use flight\database\PdoWrapper;
 
+/**
+ * Modèle Don - Dons reçus (stock global, sans ville)
+ */
 class Don
 {
     private PdoWrapper $db;
@@ -13,22 +16,37 @@ class Don
         $this->db = $db;
     }
 
+    /**
+     * Récupère tous les dons
+     */
     public function getAll(): array
     {
         return $this->db->fetchAll("
-            SELECT d.*, v.libele as ville_libele 
-            FROM bn_don d 
-            LEFT JOIN bn_ville v ON d.idVille = v.id 
+            SELECT d.*, 
+                   e.libele AS element_libele,
+                   tb.libele AS type_besoin,
+                   e.pu AS prix_unitaire,
+                   (d.quantite * e.pu) AS montant
+            FROM bn_don d
+            JOIN bn_element e ON d.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
             ORDER BY d.date DESC
         ");
     }
 
+    /**
+     * Récupère un don par ID
+     */
     public function getById(int $id): ?array
     {
         $row = $this->db->fetchRow("
-            SELECT d.*, v.libele as ville_libele 
-            FROM bn_don d 
-            LEFT JOIN bn_ville v ON d.idVille = v.id 
+            SELECT d.*, 
+                   e.libele AS element_libele,
+                   tb.libele AS type_besoin,
+                   e.pu AS prix_unitaire
+            FROM bn_don d
+            JOIN bn_element e ON d.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
             WHERE d.id = ?
         ", [$id]);
 
@@ -36,49 +54,82 @@ class Don
         return empty($data) ? null : $data;
     }
 
-    public function getByVille(int $idVille): array
+    /**
+     * Insère un nouveau don (va au stock global)
+     */
+    public function insert(int $idElement, int $quantite, string $date = '', string $description = ''): int
     {
-        return $this->db->fetchAll("
-            SELECT * FROM bn_don 
-            WHERE idVille = ? 
-            ORDER BY date DESC
-        ", [$idVille]);
-    }
+        if (empty($date)) {
+            $date = date('Y-m-d H:i:s');
+        }
 
-    public function create(string $date, int $idVille, ?string $description, int $quantite): int
-    {
-        $this->db->runQuery("INSERT INTO bn_don (date, idVille, description, quantite) VALUES (?, ?, ?, ?)", [$date, $idVille, $description, $quantite]);
+        $this->db->runQuery(
+            "INSERT INTO bn_don (idelement, quantite, `date`, description) VALUES (?, ?, ?, ?)",
+            [$idElement, $quantite, $date, $description]
+        );
+
         return (int)$this->db->lastInsertId();
     }
 
-    public function update(int $id, string $date, int $idVille, ?string $description, int $quantite): bool
+    /**
+     * Récupère le total des dons
+     */
+    public function getTotal(): array
     {
-        $stmt = $this->db->runQuery("UPDATE bn_don SET date = ?, idVille = ?, description = ?, quantite = ? WHERE id = ?", [$date, $idVille, $description, $quantite, $id]);
-        return $stmt->rowCount() > 0;
+        $row = $this->db->fetchRow("
+            SELECT 
+                COUNT(*) AS nb_dons,
+                COALESCE(SUM(d.quantite), 0) AS quantite_totale,
+                COALESCE(SUM(d.quantite * e.pu), 0) AS montant_total
+            FROM bn_don d
+            JOIN bn_element e ON d.idelement = e.id
+        ");
+        
+        $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
+        return $data ?: ['nb_dons' => 0, 'quantite_totale' => 0, 'montant_total' => 0];
     }
 
-    public function delete(int $id): bool
-    {
-        $stmt = $this->db->runQuery("DELETE FROM bn_don WHERE id = ?", [$id]);
-        return $stmt->rowCount() > 0;
-    }
-
-    public function getStatsByVille(): array
+    /**
+     * Récupère les dons en argent disponibles
+     */
+    public function getDonsArgent(): array
     {
         return $this->db->fetchAll("
-            SELECT v.libele as ville_libele, COUNT(d.id) as nombre_dons, 
-                   SUM(d.quantite) as quantite_totale
-            FROM bn_don d 
-            LEFT JOIN bn_ville v ON d.idVille = v.id 
-            GROUP BY v.id, v.libele 
-            ORDER BY quantite_totale DESC
+            SELECT d.*, 
+                   e.libele AS element_libele,
+                   e.pu AS prix_unitaire,
+                   (d.quantite * e.pu) AS montant
+            FROM bn_don d
+            JOIN bn_element e ON d.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            WHERE tb.libele = 'Argent'
+            ORDER BY d.date ASC
         ");
     }
 
-    public function getTotalQuantite(): int
+    /**
+     * Calcule le montant total des dons en argent
+     */
+    public function getMontantArgentTotal(): float
     {
-        $row = $this->db->fetchRow("SELECT SUM(quantite) as total FROM bn_don");
+        $row = $this->db->fetchRow("
+            SELECT COALESCE(SUM(d.quantite * e.pu), 0) AS total
+            FROM bn_don d
+            JOIN bn_element e ON d.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            WHERE tb.libele = 'Argent'
+        ");
+        
         $data = $row instanceof \flight\util\Collection ? $row->getData() : $row;
-        return (int)($data['total'] ?? 0);
+        return (float)($data['total'] ?? 0);
+    }
+
+    /**
+     * Supprime un don
+     */
+    public function delete(int $id): bool
+    {
+        $this->db->runQuery("DELETE FROM bn_don WHERE id = ?", [$id]);
+        return true;
     }
 }

@@ -59,13 +59,19 @@ CREATE TABLE IF NOT EXISTS bn_don (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `date` DATETIME NOT NULL,
   idVille INT UNSIGNED NOT NULL,
+  idelement INT UNSIGNED NOT NULL,
   description TEXT NULL,
   quantite INT UNSIGNED NOT NULL,
   PRIMARY KEY (id),
   KEY idx_don_idVille (idVille),
+  KEY idx_don_idelement (idelement),
   KEY idx_don_date (`date`),
   CONSTRAINT fk_don_ville
     FOREIGN KEY (idVille) REFERENCES bn_ville(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+  ,CONSTRAINT fk_don_element
+    FOREIGN KEY (idelement) REFERENCES bn_element(id)
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
