@@ -248,37 +248,37 @@ INSERT INTO bn_element (libele, idtypebesoin, pu) VALUES
  ('Argent', (SELECT id FROM bn_typeBesoin WHERE libele = 'Argent'), 1.00);
 
 -- Besoins
-INSERT INTO bn_besoin (idelement, quantite, idVille, `date`) VALUES
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 800, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 12000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Huile (L)'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 80, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Clous (kg)'), 60, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 6000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 600, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 150, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bois'), 100, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 8000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 300, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Haricots'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 40, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Clous (kg)'), 30, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 4000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 700, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 180, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Bois'), 150, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-15 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 10000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
- ((SELECT e.id FROM bn_element e WHERE e.libele = 'groupe'), 3, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00');
+INSERT INTO bn_besoin (id, idelement, quantite, idVille, `date`) VALUES
+ (17, (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 800, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
+ (4, (SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00'),
+ (23, (SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
+ (1, (SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00'),
+ (12, (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 12000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-16 00:00:00'),
+ (9, (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 500, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
+ (25, (SELECT e.id FROM bn_element e WHERE e.libele = 'Huile (L)'), 120, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-16 00:00:00'),
+ (6, (SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 80, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
+ (19, (SELECT e.id FROM bn_element e WHERE e.libele = 'Clous (kg)'), 60, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-16 00:00:00'),
+ (3, (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 6000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Mananjary'), '2026-02-15 00:00:00'),
+ (21, (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 600, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
+ (14, (SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-15 00:00:00'),
+ (8, (SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 150, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
+ (26, (SELECT e.id FROM bn_element e WHERE e.libele = 'Bois'), 100, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-15 00:00:00'),
+ (10, (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 8000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Farafangana'), '2026-02-16 00:00:00'),
+ (5, (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 300, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
+ (18, (SELECT e.id FROM bn_element e WHERE e.libele = 'Haricots'), 200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-16 00:00:00'),
+ (2, (SELECT e.id FROM bn_element e WHERE e.libele = 'Tôle'), 40, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
+ (24, (SELECT e.id FROM bn_element e WHERE e.libele = 'Clous (kg)'), 30, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-16 00:00:00'),
+ (7, (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 4000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Nosy Be'), '2026-02-15 00:00:00'),
+ (11, (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 700, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
+ (20, (SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 1200, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-15 00:00:00'),
+ (15, (SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 180, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
+ (22, (SELECT e.id FROM bn_element e WHERE e.libele = 'Bois'), 150, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-15 00:00:00'),
+ (13, (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 10000000, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Morondava'), '2026-02-16 00:00:00'),
+ (16, (SELECT e.id FROM bn_element e WHERE e.libele = 'groupe'), 3, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Toamasina'), '2026-02-15 00:00:00');
 
--- Dons (stock global : pas de ville)
-INSERT INTO bn_don (`date`, idelement, description, quantite) VALUES
- ('2026-02-15 08:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 'Don de riz', 200),
+ -- Dons (stock global : pas de ville)
+ INSERT INTO bn_don (`date`, idelement, description, quantite) VALUES
+  ('2026-02-15 08:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 'Don de riz', 200),
  ('2026-02-15 10:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Eau (L)'), 'Don d''eau', 500),
  ('2026-02-15 14:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Bâche'), 'Don de bâches', 50),
  ('2026-02-15 16:00:00', (SELECT e.id FROM bn_element e WHERE e.libele = 'Argent'), 'Don en argent', 2000000);
@@ -333,3 +333,39 @@ BEGIN
   DELETE FROM bn_distribution;
 END$$
 DELIMITER ;
+
+
+DROP VIEW IF EXISTS vue_ville_recap;
+
+CREATE VIEW vue_ville_recap AS
+SELECT 
+    v.id AS ville_id,
+    v.libele AS ville_libele,
+    r.id AS region_id,
+    r.libele AS region_libele,
+    e.id AS element_id,
+    e.libele AS element_libele,
+    e.pu AS element_pu,
+    tb.id AS type_besoin_id,
+    tb.libele AS type_besoin_libele,
+    COALESCE(b.quantite, 0) AS quantite_besoin,
+    COALESCE(d.quantite_recue, 0) AS quantite_donnee,
+    GREATEST(0, COALESCE(b.quantite, 0) - COALESCE(d.quantite_recue, 0)) AS quantite_restante,
+    COALESCE(b.quantite, 0) * e.pu AS montant_besoin,
+    GREATEST(0, COALESCE(b.quantite, 0) - COALESCE(d.quantite_recue, 0)) * e.pu AS montant_restant
+FROM bn_ville v
+JOIN bn_region r ON v.idRegion = r.id
+LEFT JOIN (
+    SELECT idVille, idelement, SUM(quantite) AS quantite
+    FROM bn_besoin
+    GROUP BY idVille, idelement
+) b ON v.id = b.idVille
+LEFT JOIN (
+    SELECT idVille, idelement, SUM(quantite) AS quantite_recue
+    FROM bn_distribution
+    GROUP BY idVille, idelement
+) d ON v.id = d.idVille AND b.idelement = d.idelement
+LEFT JOIN bn_element e ON b.idelement = e.id
+LEFT JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+WHERE b.idelement IS NOT NULL
+ORDER BY r.libele, v.libele, e.libele;
