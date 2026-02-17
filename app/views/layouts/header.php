@@ -37,6 +37,24 @@
 </head>
 <body>
 
+    <?php
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $resetSuccess = '';
+        $resetError = '';
+
+        if (!empty($_SESSION['reset_success'])) {
+            $resetSuccess = (string)$_SESSION['reset_success'];
+            unset($_SESSION['reset_success']);
+        }
+        if (!empty($_SESSION['reset_error'])) {
+            $resetError = (string)$_SESSION['reset_error'];
+            unset($_SESSION['reset_error']);
+        }
+    ?>
+
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-navbar fixed-top shadow-sm">
         <div class="container">
@@ -90,6 +108,11 @@
                 </ul>
                 
                 <div class="d-flex align-items-center">
+                    <form method="post" action="<?= htmlspecialchars($toUrl('/reset-all')) ?>" class="me-2" onsubmit="return confirm('Confirmer la réinitialisation ? Cette action va remettre les besoins et les dons à l\'état initial, et vider les achats et distributions.');">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser
+                        </button>
+                    </form>
                     <span class="badge bg-light text-dark me-2">
                         <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?>
                     </span>
@@ -97,6 +120,22 @@
             </div>
         </div>
     </nav>
+
+    <?php if (!empty($resetSuccess) || !empty($resetError)): ?>
+        <div class="container mt-3">
+            <?php if (!empty($resetSuccess)): ?>
+                <div class="alert alert-success" role="alert">
+                    <?= htmlspecialchars($resetSuccess) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($resetError)): ?>
+                <div class="alert alert-danger" role="alert">
+                    <?= htmlspecialchars($resetError) ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Contenu principal (avec marge pour la navbar fixe) -->
     <main class="main-content">

@@ -22,6 +22,7 @@ use app\controller\BesoinController;
 use app\controller\DonController;
 use app\controller\AchatController;
 use app\controller\RecapController;
+use app\controller\ResetController;
 
 /** 
  * @var Router $router 
@@ -63,6 +64,9 @@ $router->get('/achat/liste', [AchatController::class, 'liste']);
 // Récapitulation
 $router->get('/recap', [RecapController::class, 'index']);
 $router->get('/api/recap', [RecapController::class, 'apiRecap']);
+
+// Reset
+$router->post('/reset-all', [ResetController::class, 'resetAll']);
 
 
 //$router->group('', function (Router $router) use ($app) {
