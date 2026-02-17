@@ -97,7 +97,7 @@ class Besoin
     }
 
     /**
-     * Récupère les besoins non satisfaits groupés par ville
+     * Récupère les besoins groupés par ville avec quantité restante (besoin - distribué)
      */
     public function getBesoinsParVille(): array
     {
@@ -114,25 +114,16 @@ class Besoin
                     WHERE d.idVille = v.id
                 ), 0) AS deja_recu
             FROM bn_ville v
-            LEFT JOIN bn_besoin b ON v.id = b.idVille AND (b.satisfait = 0 OR b.satisfait IS NULL)
+            INNER JOIN bn_besoin b ON v.id = b.idVille
             LEFT JOIN bn_element e ON b.idelement = e.id
             GROUP BY v.id, v.libele
-            HAVING nb_besoins > 0
+            HAVING quantite_totale > deja_recu
             ORDER BY v.libele
         ");
     }
 
     /**
-     * Marque un besoin comme satisfait
-     */
-    public function marquerSatisfait(int $id): bool
-    {
-        $stmt = $this->db->runQuery("UPDATE bn_besoin SET satisfait = 1 WHERE id = ?", [$id]);
-        return $stmt->rowCount() > 0;
-    }
-
-    /**
-     * Récupère les besoins non satisfaits
+     * Récupère les besoins non satisfaits (où quantité besoin > quantité distribuée)
      */
     public function getNonSatisfaits(): array
     {
@@ -147,13 +138,48 @@ class Besoin
                        SELECT SUM(d.quantite)
                        FROM bn_distribution d
                        WHERE d.idVille = b.idVille AND d.idelement = b.idelement
-                   ), 0) AS deja_recu
+                   ), 0) AS deja_recu,
+                   (b.quantite - COALESCE((
+                       SELECT SUM(d.quantite)
+                       FROM bn_distribution d
+                       WHERE d.idVille = b.idVille AND d.idelement = b.idelement
+                   ), 0)) AS quantite_restante
             FROM bn_besoin b
             JOIN bn_element e ON b.idelement = e.id
             JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
             JOIN bn_ville v ON b.idVille = v.id
-            WHERE b.satisfait = 0 OR b.satisfait IS NULL
+            HAVING quantite_restante > 0
             ORDER BY b.date ASC, b.id ASC
+        ");
+    }
+    
+    /**
+     * Récupère les besoins par élément avec la quantité restante à satisfaire
+     */
+    public function getBesoinsParElement(): array
+    {
+        return $this->db->fetchAll("
+            SELECT 
+                e.id AS element_id,
+                e.libele AS element_libele,
+                tb.libele AS type_besoin,
+                SUM(b.quantite) AS quantite_besoin,
+                COALESCE((
+                    SELECT SUM(d.quantite)
+                    FROM bn_distribution d
+                    WHERE d.idelement = e.id
+                ), 0) AS quantite_distribuee,
+                (SUM(b.quantite) - COALESCE((
+                    SELECT SUM(d.quantite)
+                    FROM bn_distribution d
+                    WHERE d.idelement = e.id
+                ), 0)) AS quantite_restante
+            FROM bn_besoin b
+            JOIN bn_element e ON b.idelement = e.id
+            JOIN bn_typeBesoin tb ON e.idtypebesoin = tb.id
+            GROUP BY e.id, e.libele, tb.libele
+            HAVING quantite_restante > 0
+            ORDER BY tb.libele, e.libele
         ");
     }
 }

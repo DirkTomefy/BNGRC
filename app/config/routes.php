@@ -50,6 +50,7 @@ $router->get('/don/simulation', [DonController::class, 'simulation']);
 $router->post('/don/simuler', [DonController::class, 'simuler']);
 $router->post('/don/valider', [DonController::class, 'valider']);
 $router->post('/don/distribuer-auto', [DonController::class, 'distribuerAuto']);
+$router->post('/don/annuler-simulation', [DonController::class, 'annulerSimulation']);
 
 // Achat
 $router->get('/achat/saisie', [AchatController::class, 'saisie']);

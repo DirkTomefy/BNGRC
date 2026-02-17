@@ -24,6 +24,9 @@ INSERT INTO bn_element (libele, idtypebesoin, pu) VALUES
  ('Gants médicaux (paire)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 2000.00),
  ('Carburant (L)', (SELECT id FROM bn_typeBesoin WHERE libele = 'Materiel'), 6000.00);
 
+INSERT INTO bn_element (libele, idtypebesoin, pu) VALUES
+ ('Dollar', (SELECT id FROM bn_typeBesoin WHERE libele = 'Argent'), 5000);
+
 -- Besoins
 INSERT INTO bn_besoin (idelement, quantite, idVille, `date`) VALUES
  ((SELECT e.id FROM bn_element e WHERE e.libele = 'Riz (kg)'), 300, (SELECT v.id FROM bn_ville v WHERE v.libele = 'Antananarivo'), '2026-02-10 09:30:00'),

@@ -290,17 +290,14 @@ class DonController
                     (int)$distribution['idVille'],
                     (int)$distribution['idElement'],
                     (int)$distribution['quantite'],
-                    'simulation',
-                    (int)$distribution['besoin_id']
+                    'don', // source = don
+                    null   // id_source optionnel
                 );
 
                 $nbDistribues++;
                 $totalQuantite += (int)$distribution['quantite'];
-
-                // Marquer le besoin comme satisfait si entièrement couvert
-                if (!empty($distribution['besoin_satisfait'])) {
-                    $this->besoinModel->marquerSatisfait((int)$distribution['besoin_id']);
-                }
+                // Note: Le besoin est automatiquement satisfait via la vue vue_besoins_ville
+                // quand quantite_recue >= quantite_demandee
             }
 
             // Vider la simulation
@@ -339,23 +336,40 @@ class DonController
     }
 
     /**
+     * Annuler la simulation en cours
+     */
+    public function annulerSimulation(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION['resultat_simulation'] = null;
+        $_SESSION['simulation_success'] = 'Simulation annulée.';
+
+        $this->app->redirect('/don/simulation');
+    }
+
+    /**
      * Récupère les besoins non satisfaits pour un élément donné, triés FIFO (date ASC, id ASC)
+     * Un besoin est non satisfait si quantite_besoin > quantite_distribuee
      */
     private function getBesoinsNonSatisfaits(int $idElement): array
     {
         return $this->app->db()->fetchAll("
-            SELECT b.id, b.idelement, b.quantite, b.idVille, b.date,
-                   v.libele AS ville_libele,
-                   COALESCE((
-                       SELECT SUM(d.quantite) 
-                       FROM bn_distribution d 
-                       WHERE d.idVille = b.idVille AND d.idelement = b.idelement
-                   ), 0) AS deja_recu
-            FROM bn_besoin b
-            LEFT JOIN bn_ville v ON b.idVille = v.id
-            WHERE b.idelement = ?
-              AND (b.satisfait = 0 OR b.satisfait IS NULL)
-            ORDER BY b.date ASC, b.id ASC
+            SELECT 
+                id_besoin AS id, 
+                idelement, 
+                quantite_demandee AS quantite, 
+                idVille, 
+                date_besoin AS date,
+                ville_libele,
+                quantite_recue AS deja_recu,
+                quantite_restante
+            FROM vue_besoins_ville
+            WHERE idelement = ?
+              AND quantite_restante > 0
+            ORDER BY date_besoin ASC, id_besoin ASC
         ", [$idElement]);
     }
 

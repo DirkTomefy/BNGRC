@@ -154,6 +154,7 @@ class AchatController
 
     /**
      * Valide les achats du panier et les ajoute au stock
+     * Calcule avec frais (10% par défaut)
      */
     public function validerAchats(): void
     {
@@ -169,11 +170,16 @@ class AchatController
             return;
         }
 
-        $totalPanier = array_sum(array_column($panierAchats, 'montant'));
+        // Calculer le total TTC (avec frais 10%)
+        $tauxFrais = 10.0;
+        $totalHT = array_sum(array_column($panierAchats, 'montant'));
+        $totalFrais = $totalHT * ($tauxFrais / 100);
+        $totalTTC = $totalHT + $totalFrais;
+        
         $argentDisponible = $this->stockModel->getArgentDisponible();
 
-        if ($totalPanier > $argentDisponible) {
-            $_SESSION['achat_error'] = "Fonds insuffisants. Disponible: " . number_format($argentDisponible, 2) . " Ar";
+        if ($totalTTC > $argentDisponible) {
+            $_SESSION['achat_error'] = "Fonds insuffisants. Disponible: " . number_format($argentDisponible, 2) . " Ar, Requis (TTC): " . number_format($totalTTC, 2) . " Ar";
             $this->app->redirect('/achat/saisie');
             return;
         }
@@ -186,7 +192,9 @@ class AchatController
                     (int)$achat['id_element'],
                     (int)$achat['quantite'],
                     (float)$achat['prix_unitaire'],
-                    $achat['date']
+                    $tauxFrais, // taux de frais
+                    $achat['date'],
+                    '' // description
                 );
                 $nbAjoutes++;
             }
@@ -194,7 +202,7 @@ class AchatController
             // Vider le panier
             $_SESSION['panier_achats'] = [];
 
-            $_SESSION['achat_success'] = $nbAjoutes . ' achat(s) enregistré(s) au stock ! Montant total: ' . number_format($totalPanier, 2) . ' Ar';
+            $_SESSION['achat_success'] = $nbAjoutes . ' achat(s) enregistré(s) au stock ! Montant TTC: ' . number_format($totalTTC, 2) . ' Ar (dont ' . number_format($totalFrais, 2) . ' Ar de frais)';
         } catch (\Exception $e) {
             $_SESSION['achat_error'] = 'Erreur: ' . $e->getMessage();
         }

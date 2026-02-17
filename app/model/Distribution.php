@@ -105,66 +105,54 @@ class Distribution
             $this->db->runQuery("START TRANSACTION");
 
             // Récupérer le stock disponible
-            $stock = $this->db->fetchAll("SELECT * FROM vue_stock WHERE stock_disponible > 0");
+            $stock = $this->db->fetchAll("SELECT idelement, quantite_stock FROM vue_stock WHERE quantite_stock > 0");
             $stockMap = [];
             foreach ($stock as $s) {
-                $stockMap[$s['idelement']] = $s['stock_disponible'];
+                $stockMap[$s['idelement']] = $s['quantite_stock'];
             }
 
-            // Récupérer les besoins non satisfaits (FIFO par date)
+            // Récupérer les besoins non satisfaits via vue_besoins_ville (FIFO par date)
             $besoins = $this->db->fetchAll("
-                SELECT b.*, 
-                       v.libele AS ville_libele,
-                       e.libele AS element_libele,
-                       COALESCE((
-                           SELECT SUM(d.quantite) 
-                           FROM bn_distribution d 
-                           WHERE d.idVille = b.idVille AND d.idelement = b.idelement
-                       ), 0) AS deja_recu
-                FROM bn_besoin b
-                JOIN bn_ville v ON b.idVille = v.id
-                JOIN bn_element e ON b.idelement = e.id
-                WHERE b.satisfait = 0 OR b.satisfait IS NULL
-                ORDER BY b.date ASC, b.id ASC
+                SELECT 
+                    id_besoin,
+                    idVille,
+                    ville_libele,
+                    idelement,
+                    element_libele,
+                    quantite_demandee,
+                    quantite_recue,
+                    quantite_restante
+                FROM vue_besoins_ville
+                WHERE quantite_restante > 0
+                ORDER BY date_besoin ASC, id_besoin ASC
             ");
 
             foreach ($besoins as $besoin) {
                 $idElement = $besoin['idelement'];
                 $idVille = $besoin['idVille'];
-                $quantiteBesoin = $besoin['quantite'] - $besoin['deja_recu'];
-
-                if ($quantiteBesoin <= 0) {
-                    // Besoin déjà satisfait, le marquer
-                    $this->db->runQuery("UPDATE bn_besoin SET satisfait = 1 WHERE id = ?", [$besoin['id']]);
-                    continue;
-                }
+                $quantiteRestante = (int)$besoin['quantite_restante'];
 
                 if (!isset($stockMap[$idElement]) || $stockMap[$idElement] <= 0) {
                     continue; // Pas de stock disponible pour cet élément
                 }
 
                 // Quantité à distribuer = min(stock disponible, besoin restant)
-                $quantiteDistribuer = min($stockMap[$idElement], $quantiteBesoin);
+                $quantiteDistribuer = min($stockMap[$idElement], $quantiteRestante);
 
                 if ($quantiteDistribuer > 0) {
                     // Créer la distribution
-                    $distId = $this->insert($idVille, $idElement, $quantiteDistribuer, 'auto', $besoin['id']);
+                    $distId = $this->insert($idVille, $idElement, $quantiteDistribuer, 'don', null);
 
                     $result['distributions'][] = [
                         'id' => $distId,
                         'ville' => $besoin['ville_libele'],
                         'element' => $besoin['element_libele'],
                         'quantite' => $quantiteDistribuer,
-                        'besoin_id' => $besoin['id']
+                        'besoin_id' => $besoin['id_besoin']
                     ];
 
                     // Mettre à jour le stock disponible localement
                     $stockMap[$idElement] -= $quantiteDistribuer;
-
-                    // Vérifier si le besoin est entièrement satisfait
-                    if ($quantiteDistribuer >= $quantiteBesoin) {
-                        $this->db->runQuery("UPDATE bn_besoin SET satisfait = 1 WHERE id = ?", [$besoin['id']]);
-                    }
                 }
             }
 
