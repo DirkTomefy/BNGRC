@@ -27,17 +27,8 @@ class RecapController
         $recapComplet = $this->recapModel->getRecapComplet();
         $tauxFrais = $this->configModel->getFraisAchatPourcent();
 
-        // Adapter les données pour la vue
-        $recap = [
-            'besoins_totaux' => $recapComplet['besoins_totaux']['montant_total'] ?? 0,
-            'besoins_satisfaits' => $recapComplet['besoins_satisfaits']['montant_total'] ?? 0,
-            'besoins_restants' => $recapComplet['besoins_restants']['montant_total'] ?? 0,
-            'total_dons' => $recapComplet['dons_totaux']['montant_total'] ?? 0,
-            'total_achats' => $recapComplet['achats_totaux']['montant_ttc'] ?? 0
-        ];
-
         $this->app->render('recap/index', [
-            'recap' => $recap,
+            'recap' => $recapComplet,
             'tauxFrais' => $tauxFrais
         ]);
     }
@@ -51,16 +42,6 @@ class RecapController
 
         $recapComplet = $this->recapModel->getRecapComplet();
 
-        // Adapter les données pour l'API
-        $recap = [
-            'besoins_totaux' => (int)($recapComplet['besoins_totaux']['montant_total'] ?? 0),
-            'besoins_satisfaits' => (int)($recapComplet['besoins_satisfaits']['montant_total'] ?? 0),
-            'besoins_restants' => (int)($recapComplet['besoins_restants']['montant_total'] ?? 0),
-            'total_dons' => (int)($recapComplet['dons_totaux']['montant_total'] ?? 0),
-            'total_achats' => (int)($recapComplet['achats_totaux']['montant_ttc'] ?? 0),
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
-
-        echo json_encode($recap);
+        echo json_encode($recapComplet);
     }
 }
